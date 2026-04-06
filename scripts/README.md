@@ -16,3 +16,6 @@ Available helper scripts:
   - installs the TPU-side Python environment
   - installs JAX TPU + core project dependencies
   - runs a smoke test
+- `train_expert_mnist.py`
+  - trains one small class-conditional MNIST expert in JAX
+  - first runnable path for the TPU-side POC

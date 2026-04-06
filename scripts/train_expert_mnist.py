@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
+
+from tpugpu.config import ExpertTrainConfig
+from tpugpu.experts.train import train_expert
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Train a single MNIST DDM expert in JAX.")
+    parser.add_argument("--expert-name", type=str, default="expert_a")
+    parser.add_argument("--class-ids", type=str, default="0,1,2,3,4")
+    parser.add_argument("--batch-size", type=int, default=128)
+    parser.add_argument("--num-epochs", type=int, default=3)
+    parser.add_argument("--learning-rate", type=float, default=1e-3)
+    parser.add_argument("--checkpoint-dir", type=str, default="./outputs/checkpoints")
+    parser.add_argument("--seed", type=int, default=0)
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+    class_ids = tuple(int(x) for x in args.class_ids.split(",") if x)
+    config = ExpertTrainConfig(
+        expert_name=args.expert_name,
+        class_ids=class_ids,
+        batch_size=args.batch_size,
+        num_epochs=args.num_epochs,
+        learning_rate=args.learning_rate,
+        checkpoint_dir=args.checkpoint_dir,
+        seed=args.seed,
+    )
+    train_expert(config)
+
+
+if __name__ == "__main__":
+    main()
