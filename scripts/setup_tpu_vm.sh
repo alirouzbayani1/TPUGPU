@@ -38,6 +38,7 @@ echo "==> Installing TPU JAX stack and project dependencies"
 pip install "jax[tpu]" -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
 pip install \
   flax \
+  matplotlib \
   optax \
   scikit-learn \
   tensorflow \

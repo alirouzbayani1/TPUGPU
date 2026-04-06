@@ -67,6 +67,7 @@ def main() -> None:
 
     pca = PCA(n_components=args.num_components, random_state=args.seed)
     embedding = pca.fit_transform(flat_images)
+    plot_embedding = embedding[:, :2]
 
     kmeans = KMeans(n_clusters=args.num_clusters, random_state=args.seed, n_init=20)
     cluster_ids = kmeans.fit_predict(embedding)
@@ -77,6 +78,7 @@ def main() -> None:
     np.save(output_dir / "cluster_ids.npy", cluster_ids)
     np.save(output_dir / "labels.npy", labels)
     np.save(output_dir / "images.npy", images)
+    np.save(output_dir / "embedding_2d.npy", plot_embedding)
 
     with (output_dir / "summary.json").open("w") as f:
         json.dump(summary, f, indent=2)
