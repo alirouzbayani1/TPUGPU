@@ -39,6 +39,7 @@ pip install "jax[tpu]" -f https://storage.googleapis.com/jax-releases/libtpu_rel
 pip install \
   flax \
   optax \
+  tensorflow \
   tensorflow-datasets \
   orbax-checkpoint \
   chex \
