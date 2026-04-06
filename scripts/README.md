@@ -6,5 +6,13 @@ This directory will hold thin entrypoints for:
 - training the router
 - generating routed samples
 - running quick evaluations
+- bootstrapping TPU VMs
 
 The core logic should live under `src/tpugpu`, not here.
+
+Available helper scripts:
+
+- `setup_tpu_vm.sh`
+  - installs the TPU-side Python environment
+  - installs JAX TPU + core project dependencies
+  - runs a smoke test
