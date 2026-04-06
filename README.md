@@ -313,3 +313,8 @@ This README is intentionally detailed so a future session can resume without rec
 The execution plan for the first implementation pass lives in:
 
 - [PROJECT_PLAN.md](/Users/ali/projects/TPUGPU/PROJECT_PLAN.md)
+
+The learning and stack notes live in:
+
+- [docs/JAX_XLA_PRIMER.md](/Users/ali/projects/TPUGPU/docs/JAX_XLA_PRIMER.md)
+- [docs/TPU_FIRST_DDM_GUIDE.md](/Users/ali/projects/TPUGPU/docs/TPU_FIRST_DDM_GUIDE.md)

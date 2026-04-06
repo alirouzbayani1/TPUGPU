@@ -4,12 +4,18 @@
 
 Build the smallest technically honest proof that a `DDM` can route across heterogeneous accelerators:
 
-- one expert on `GPU`
 - one expert on `TPU`
+- one expert on `GPU`
 - one router making `per-timestep` expert decisions
 - one logical diffusion system
 
 The first milestone is `MNIST`, not because it is the final target, but because it is the fastest way to validate the routing architecture.
+
+The first implementation priority is explicitly:
+
+> `JAX/XLA on TPU first`
+
+This is both a technical and learning decision. We want this repo to teach the `Google stack` from first principles while we build the POC.
 
 ## Scope
 
@@ -36,15 +42,16 @@ The first milestone is `MNIST`, not because it is the final target, but because 
 
 ## Milestones
 
-### M0: Single-stack routed DDM on MNIST
+### M0: TPU-first JAX routed DDM on MNIST
 
 Goal:
 
-- prove the DDM mechanics before introducing hardware complexity
+- prove the DDM mechanics in the `JAX/XLA` stack before introducing heterogeneous placement
 
 Success criteria:
 
-- two experts train successfully
+- one small expert trains successfully on `TPU`
+- a second expert can be trained with the same `JAX` code path
 - router predicts expert IDs from noisy states
 - routed top-1 sampler produces sensible results
 - forced wrong-expert behavior is visibly worse than routed behavior
@@ -53,7 +60,7 @@ Success criteria:
 
 Goal:
 
-- move one expert to `TPU` and one expert to `GPU`
+- keep the exact same `JAX` model family and move one expert to `GPU` while the other stays on `TPU`
 
 Success criteria:
 
@@ -97,6 +104,12 @@ That is acceptable for `v0`.
 
 Use a small `class-conditional DDPM` with a `UNet` backbone.
 
+Implementation priority:
+
+- `JAX` model definition
+- `XLA`-compiled training step
+- TPU as the first target runtime
+
 Expert interface:
 
 - input: `x_t, t, y`
@@ -132,6 +145,15 @@ This is the core behavior that makes the system a real routed DDM rather than a 
 
 ## Implementation Steps
 
+### Step 0: Learn the stack while building
+
+This project is intentionally also a learning project.
+
+The first docs to study are:
+
+- `/Users/ali/projects/TPUGPU/docs/JAX_XLA_PRIMER.md`
+- `/Users/ali/projects/TPUGPU/docs/TPU_FIRST_DDM_GUIDE.md`
+
 ### Step 1: Data layer
 
 Deliverables:
@@ -145,8 +167,10 @@ Deliverables:
 
 Deliverables:
 
-- small class-conditional UNet
-- DDPM training loop
+- small class-conditional UNet in `JAX`
+- DDPM training loop in `JAX`
+- compiled `train_step`
+- TPU-targeted training state
 - config for expert A
 - config for expert B
 - checkpoint saving/loading
@@ -206,14 +230,18 @@ Planned structure:
 Build in this order:
 
 1. data split
-2. single expert training
-3. second expert training
-4. router training
-5. routed sampler
+2. single expert training in `JAX/XLA`
+3. second expert training in `JAX/XLA`
+4. router training in `JAX/XLA`
+5. routed sampler in `JAX/XLA`
 6. evaluation script
 7. TPU/GPU split
 
 Do not move to TPU until routed MNIST works on one stack.
+
+Revision:
+
+For this repo, `one stack first` means `JAX/XLA on TPU`.
 
 ## Risks
 
@@ -243,6 +271,10 @@ Mitigation:
 
 The first concrete deliverable is:
 
-> a routed MNIST DDM with two experts and a separately trained router, all running correctly on one stack
+> a routed MNIST DDM with two experts and a separately trained router, implemented in `JAX/XLA` and running correctly on TPU
 
 Once that exists, moving one expert to TPU becomes an engineering task instead of a research task.
+
+Correction to the original wording:
+
+After this revision, moving one expert to GPU becomes an engineering task instead of a research task.
