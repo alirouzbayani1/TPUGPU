@@ -80,6 +80,7 @@ def train_step(
 
 
 def save_checkpoint(state: TrainState, checkpoint_dir: str, step: int, metadata: dict) -> None:
+    checkpoint_dir = os.path.abspath(checkpoint_dir)
     os.makedirs(checkpoint_dir, exist_ok=True)
     checkpointer = ocp.PyTreeCheckpointer()
     ckpt = {"state": state, "metadata": metadata}
