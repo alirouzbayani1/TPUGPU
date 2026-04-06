@@ -14,6 +14,10 @@ class NumpyDataset:
 
 
 def _resize_and_normalize(images: np.ndarray, image_size: int) -> np.ndarray:
+    if images.ndim == 3:
+        images = images[..., None]
+    if images.ndim != 4:
+        raise ValueError(f"Expected MNIST images with 3 or 4 dimensions, got shape {images.shape}")
     images = images.astype(np.float32) / 255.0
     images = images * 2.0 - 1.0
     if images.shape[1] != image_size or images.shape[2] != image_size:
@@ -29,8 +33,8 @@ def load_mnist_numpy(image_size: int = 32) -> tuple[NumpyDataset, NumpyDataset]:
     train_images, train_labels = train_ds
     test_images, test_labels = test_ds
 
-    train_images = _resize_and_normalize(train_images[..., None], image_size)
-    test_images = _resize_and_normalize(test_images[..., None], image_size)
+    train_images = _resize_and_normalize(train_images, image_size)
+    test_images = _resize_and_normalize(test_images, image_size)
 
     return (
         NumpyDataset(train_images, train_labels.astype(np.int32)),
