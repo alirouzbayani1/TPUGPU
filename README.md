@@ -316,5 +316,4 @@ The execution plan for the first implementation pass lives in:
 
 The learning and stack notes live in:
 
-- [docs/JAX_XLA_PRIMER.md](/Users/ali/projects/TPUGPU/docs/JAX_XLA_PRIMER.md)
 - [docs/TPU_FIRST_DDM_GUIDE.md](/Users/ali/projects/TPUGPU/docs/TPU_FIRST_DDM_GUIDE.md)

@@ -9,3 +9,4 @@ build/
 *.pyc
 .env
 .python-version
+.local_docs/

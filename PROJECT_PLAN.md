@@ -151,7 +151,6 @@ This project is intentionally also a learning project.
 
 The first docs to study are:
 
-- `/Users/ali/projects/TPUGPU/docs/JAX_XLA_PRIMER.md`
 - `/Users/ali/projects/TPUGPU/docs/TPU_FIRST_DDM_GUIDE.md`
 
 ### Step 1: Data layer
