@@ -307,3 +307,9 @@ As of `2026-04-06`, the key decisions already made are:
 - treat this as the first architecture proof before moving to larger Google-facing models
 
 This README is intentionally detailed so a future session can resume without reconstructing the entire design discussion.
+
+## Additional Project Docs
+
+The execution plan for the first implementation pass lives in:
+
+- [PROJECT_PLAN.md](/Users/ali/projects/TPUGPU/PROJECT_PLAN.md)
