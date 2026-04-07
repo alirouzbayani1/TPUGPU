@@ -81,7 +81,7 @@ def _restore_expert_state(expert_name: str, checkpoint_dir: str, batch_size: int
 
 def _create_router_state(config: RouterTrainConfig, rng: jax.Array) -> RouterState:
     model = RouterMLP(
-        num_experts=len(config.expert_names),
+        num_experts=len(config.expert_label_splits),
         num_classes=config.num_classes,
         hidden_dim=config.hidden_dim,
     )
@@ -150,11 +150,13 @@ def train_router(config: RouterTrainConfig) -> None:
     train_ds, test_ds = load_mnist_numpy(image_size=config.image_size)
     test_targets = _oracle_targets(test_ds.labels, config.expert_label_splits)
 
-    expert_restore = [
-        _restore_expert_state(name, config.checkpoint_dir, config.batch_size, config.seed + idx)
-        for idx, name in enumerate(config.expert_names)
-    ]
-    expert_checkpoint_paths = [path for _, path in expert_restore]
+    expert_checkpoint_paths: list[str | None] = []
+    if config.expert_names:
+        expert_restore = [
+            _restore_expert_state(name, config.checkpoint_dir, config.batch_size, config.seed + idx)
+            for idx, name in enumerate(config.expert_names)
+        ]
+        expert_checkpoint_paths = [path for _, path in expert_restore]
 
     rng = jax.random.PRNGKey(config.seed)
     init_rng, _ = jax.random.split(rng)

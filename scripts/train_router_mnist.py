@@ -9,7 +9,7 @@ from tpugpu.router.train import RouterTrainConfig, train_router
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train an MNIST DDM router.")
     parser.add_argument("--router-name", type=str, default="router_mnist_oracle")
-    parser.add_argument("--expert-names", type=str, default="expert_strict_0_4_fm,expert_strict_5_9_fm")
+    parser.add_argument("--expert-names", type=str, default="")
     parser.add_argument(
         "--expert-label-splits",
         type=str,
@@ -40,7 +40,7 @@ def main() -> None:
     args = parse_args()
     expert_names = tuple(name.strip() for name in args.expert_names.split(",") if name.strip())
     label_splits = parse_label_splits(args.expert_label_splits)
-    if len(expert_names) != len(label_splits):
+    if expert_names and len(expert_names) != len(label_splits):
         raise ValueError("--expert-names and --expert-label-splits must have the same number of groups")
 
     config = RouterTrainConfig(
