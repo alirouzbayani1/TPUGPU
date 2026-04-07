@@ -17,7 +17,6 @@
       <section class="hero">
         <div class="hero-top">
           <img class="bagel-logo" src="/static/assets/logo/bagel-logo.svg" alt="Bagel Labs" />
-          <div class="hero-meta">America/Toronto</div>
         </div>
         <div class="eyebrow">Cross-Region DDM Demo</div>
         <h1>Router-held diffusion state, streamed live, with remote expert calls on every denoising step.</h1>
@@ -49,32 +48,7 @@
 
       <section class="network">
         <div class="router-stack">
-          <div class="router-canvas-wrap">
-            <canvas id="stateCanvas" width="320" height="320"></canvas>
-            <div class="canvas-label">Router-held noisy state</div>
-          </div>
-
-          <div class="router-card" id="routerCard">
-            <div class="router-inline-title">router / europe-west4-a / x_t,t,y / top-1 step routing</div>
-          </div>
-
-          <div class="status-panel">
-            <div><span>Step</span><strong id="stepValue">0 / 0</strong></div>
-            <div><span>Chosen expert</span><strong id="selectedValue">-</strong></div>
-            <div><span>Progress</span><strong id="progressValue">0%</strong></div>
-            <div><span>Current policy</span><strong id="policyValue">alternating</strong></div>
-          </div>
-        </div>
-      </section>
-
-      <section class="technical-strip">
-        <div class="strip-note">
-          <span>live system note</span>
-          The router holds the current noisy state and emits one remote expert call per denoising step.
-        </div>
-        <div class="strip-note">
-          <span>current demo constraint</span>
-          Both visible expert nodes currently resolve to the same TPU backend so the UI can focus on the distributed control loop.
+          <div class="router-inline-title">router / europe-west4-a / x_t,t,y / top-1 step routing</div>
         </div>
       </section>
 
@@ -92,6 +66,12 @@
               <strong>TPU expert</strong>
               <span>us-east5-a</span>
             </div>
+            <div class="machine-card">
+              <div>device: v6e-1</div>
+              <div>expert: strict_0_4_fm</div>
+              <div>stack: jax / xla</div>
+              <div>role: active backend</div>
+            </div>
           </div>
 
           <div class="map-pin router-pin">
@@ -99,6 +79,15 @@
             <div class="pin-label">
               <strong>Router</strong>
               <span>europe-west4-a</span>
+            </div>
+            <div class="machine-card">
+              <div>device: cpu vm</div>
+              <div>state: x_t, t, y</div>
+              <div>mode: top-1 routing</div>
+              <div>transport: binary rpc</div>
+            </div>
+            <div class="router-live-image">
+              <canvas id="stateCanvas" width="320" height="320"></canvas>
             </div>
           </div>
 
@@ -108,33 +97,16 @@
               <strong>GPU expert</strong>
               <span>asia-southeast1-a</span>
             </div>
+            <div class="machine-card">
+              <div>device: a100 40gb</div>
+              <div>role: expert b target</div>
+              <div>stack: gpu / jax</div>
+              <div>status: training path in progress</div>
+            </div>
           </div>
 
           <div class="map-link us-eu"></div>
           <div class="map-link eu-asia"></div>
-        </div>
-        <div class="machine-specs">
-          <div class="machine-row">
-            <strong>TPU expert A</strong>
-            <span>device: v6e-1</span>
-            <span>region: us-east5-a</span>
-            <span>expert: strict_0_4_fm</span>
-            <span>stack: jax / xla</span>
-          </div>
-          <div class="machine-row">
-            <strong>Router</strong>
-            <span>device: cpu vm</span>
-            <span>region: europe-west4-a</span>
-            <span>state: x_t, t, y</span>
-            <span>transport: binary rpc</span>
-          </div>
-          <div class="machine-row">
-            <strong>GPU expert B</strong>
-            <span>device: a100 40gb</span>
-            <span>region: asia-southeast1-a</span>
-            <span>role: second expert target</span>
-            <span>status: training path in progress</span>
-          </div>
         </div>
       </section>
     </main>

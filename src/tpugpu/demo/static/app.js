@@ -2,10 +2,6 @@ const runButton = document.getElementById("runButton");
 const labelInput = document.getElementById("labelInput");
 const stepsInput = document.getElementById("stepsInput");
 const strategyInput = document.getElementById("strategyInput");
-const stepValue = document.getElementById("stepValue");
-const selectedValue = document.getElementById("selectedValue");
-const progressValue = document.getElementById("progressValue");
-const policyValue = document.getElementById("policyValue");
 const leftConnector = document.querySelector(".us-eu");
 const rightConnector = document.querySelector(".eu-asia");
 const expertLeft = document.querySelector(".tpu-pin");
@@ -78,17 +74,9 @@ function startDemo() {
     drawFrame(payload.frame);
 
     if (payload.type === "start") {
-      stepValue.textContent = `0 / ${payload.steps}`;
-      selectedValue.textContent = "-";
-      progressValue.textContent = "0%";
-      policyValue.textContent = payload.strategy;
       clearGlow();
       return;
     }
-
-    stepValue.textContent = `${payload.step ?? payload.steps} / ${payload.steps}`;
-    selectedValue.textContent = payload.selected_expert === null ? "-" : `Expert ${payload.selected_expert === 0 ? "A" : "B"}`;
-    progressValue.textContent = `${Math.round(payload.progress * 100)}%`;
 
     if (payload.selected_expert !== null) {
       flashExpert(payload.selected_expert);
