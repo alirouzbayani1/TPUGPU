@@ -12,6 +12,10 @@ const ctx = canvas.getContext("2d");
 
 let currentSource = null;
 
+const TPU_LINE_OFFSET = { x: 0, y: 0 };
+const ROUTER_LINE_OFFSET = { x: 0, y: 0 };
+const GPU_LINE_OFFSET = { x: 0, y: 0 };
+
 function pinCenter(pinElement) {
   const dot = pinElement.querySelector(".pin-dot");
   const mapRect = mapWrap.getBoundingClientRect();
@@ -26,21 +30,39 @@ function updateConnectionLines() {
   const router = pinCenter(routerPin);
   const right = pinCenter(expertRight);
 
-  leftConnector.setAttribute("x1", `${left.x}`);
-  leftConnector.setAttribute("y1", `${left.y}`);
-  leftConnector.setAttribute("x2", `${router.x}`);
-  leftConnector.setAttribute("y2", `${router.y}`);
+  const leftAdjusted = {
+    x: left.x + TPU_LINE_OFFSET.x,
+    y: left.y + TPU_LINE_OFFSET.y,
+  };
+  const routerAdjusted = {
+    x: router.x + ROUTER_LINE_OFFSET.x,
+    y: router.y + ROUTER_LINE_OFFSET.y,
+  };
+  const rightAdjusted = {
+    x: right.x + GPU_LINE_OFFSET.x,
+    y: right.y + GPU_LINE_OFFSET.y,
+  };
 
-  rightConnector.setAttribute("x1", `${router.x}`);
-  rightConnector.setAttribute("y1", `${router.y}`);
-  rightConnector.setAttribute("x2", `${right.x}`);
-  rightConnector.setAttribute("y2", `${right.y}`);
+  leftConnector.setAttribute("x1", `${leftAdjusted.x}`);
+  leftConnector.setAttribute("y1", `${leftAdjusted.y}`);
+  leftConnector.setAttribute("x2", `${routerAdjusted.x}`);
+  leftConnector.setAttribute("y2", `${routerAdjusted.y}`);
+
+  rightConnector.setAttribute("x1", `${routerAdjusted.x}`);
+  rightConnector.setAttribute("y1", `${routerAdjusted.y}`);
+  rightConnector.setAttribute("x2", `${rightAdjusted.x}`);
+  rightConnector.setAttribute("y2", `${rightAdjusted.y}`);
 
   console.log("connection-debug", {
     pinCenters: {
       tpu: left,
       router,
       gpu: right,
+    },
+    adjustedCenters: {
+      tpu: leftAdjusted,
+      router: routerAdjusted,
+      gpu: rightAdjusted,
     },
     lineUsEu: {
       x1: leftConnector.getAttribute("x1"),
