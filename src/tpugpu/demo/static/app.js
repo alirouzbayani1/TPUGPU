@@ -6,7 +6,6 @@ const leftConnector = document.getElementById("lineUsEu");
 const rightConnector = document.getElementById("lineEuAsia");
 const expertLeft = document.querySelector(".tpu-pin");
 const expertRight = document.querySelector(".gpu-pin");
-const routerCard = document.getElementById("routerCard");
 const canvas = document.getElementById("stateCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -37,7 +36,6 @@ function clearGlow() {
   rightConnector.classList.remove("active");
   expertLeft.classList.remove("active");
   expertRight.classList.remove("active");
-  routerCard.classList.remove("active");
 }
 
 function restartPulse(element) {
