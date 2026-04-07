@@ -20,7 +20,7 @@ python3 -m venv "${VENV_DIR}"
 source "${VENV_DIR}/bin/activate"
 
 pip install --upgrade pip
-pip install jax flax optax tensorflow-datasets tensorflow-cpu orbax-checkpoint chex einops scikit-learn matplotlib
+pip install jax flax optax tensorflow-datasets tensorflow-cpu orbax-checkpoint chex einops scikit-learn matplotlib fastapi uvicorn
 pip install -e "${REPO_ROOT}"
 
 python - <<'PY'

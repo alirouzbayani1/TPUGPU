@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TPUGPU Router Demo</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div class="eyebrow">Cross-Region DDM Demo</div>
+        <h1>Router in Europe, expert in the US, noisy state live on every step.</h1>
+        <p class="subhead">
+          For this first UI pass, both expert nodes point at the same TPU expert. The purpose is to show the
+          distributed inference loop and router-controlled live state update.
+        </p>
+      </section>
+
+      <section class="controls">
+        <label>
+          Digit label
+          <input id="labelInput" type="number" min="0" max="9" value="2" />
+        </label>
+        <label>
+          Steps
+          <input id="stepsInput" type="number" min="10" max="200" value="40" />
+        </label>
+        <label>
+          Strategy
+          <select id="strategyInput">
+            <option value="alternating">Alternating</option>
+            <option value="switch_halfway">Switch Halfway</option>
+            <option value="oracle">Oracle</option>
+          </select>
+        </label>
+        <button id="runButton">Run Live Demo</button>
+      </section>
+
+      <section class="network">
+        <div class="expert-card left" id="expertLeft">
+          <div class="chip-icon">TPU</div>
+          <div class="card-meta">
+            <div class="card-title">Expert A</div>
+            <div class="card-subtitle">US TPU backend</div>
+          </div>
+        </div>
+
+        <div class="router-stack">
+          <div class="router-canvas-wrap">
+            <canvas id="stateCanvas" width="320" height="320"></canvas>
+            <div class="canvas-label">Router-held noisy state</div>
+          </div>
+
+          <div class="router-card" id="routerCard">
+            <div class="chip-icon router-icon">RTR</div>
+            <div class="card-meta">
+              <div class="card-title">Router</div>
+              <div class="card-subtitle">Europe orchestrator</div>
+            </div>
+          </div>
+
+          <div class="status-panel">
+            <div><span>Step</span><strong id="stepValue">0 / 0</strong></div>
+            <div><span>Chosen expert</span><strong id="selectedValue">-</strong></div>
+            <div><span>Progress</span><strong id="progressValue">0%</strong></div>
+          </div>
+        </div>
+
+        <div class="expert-card right" id="expertRight">
+          <div class="chip-icon">TPU</div>
+          <div class="card-meta">
+            <div class="card-title">Expert B</div>
+            <div class="card-subtitle">Same TPU, second node</div>
+          </div>
+        </div>
+
+        <div class="connector left-connector" id="leftConnector"></div>
+        <div class="connector right-connector" id="rightConnector"></div>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+  </html>
