@@ -150,12 +150,13 @@ def restore_training_state(
     restored = checkpointer.restore(checkpoint_path)
     restored_state = restored["state"]
     if isinstance(restored_state, dict):
+        restored_params = restored_state["params"]
         restored_state = TrainState(
             step=restored_state["step"],
             apply_fn=state.apply_fn,
-            params=restored_state["params"],
+            params=restored_params,
             tx=state.tx,
-            opt_state=restored_state["opt_state"],
+            opt_state=state.tx.init(restored_params),
         )
     restored_metadata = restored.get("metadata", {})
     global_step = int(restored_metadata.get("global_step", 0))
