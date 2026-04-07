@@ -38,10 +38,6 @@ class TrainState(train_state.TrainState):
     pass
 
 
-def make_beta_schedule(num_steps: int) -> jnp.ndarray:
-    return jnp.linspace(1e-4, 2e-2, num_steps, dtype=jnp.float32)
-
-
 def create_train_state(config: ExpertTrainConfig, rng: jax.Array) -> TrainState:
     model = SmallConditionalUNet(
         hidden_channels=config.hidden_channels,
@@ -56,30 +52,25 @@ def create_train_state(config: ExpertTrainConfig, rng: jax.Array) -> TrainState:
     return TrainState.create(apply_fn=model.apply, params=params, tx=tx)
 
 
-def ddpm_loss(
+def flow_matching_loss(
     params: flax.core.FrozenDict,
     state: TrainState,
     batch: dict[str, jax.Array],
     rng: jax.Array,
-    betas: jax.Array,
 ) -> tuple[jax.Array, dict[str, jax.Array]]:
     images = batch["images"]
     labels = batch["labels"]
-    noise_rng, timestep_rng = jax.random.split(rng)
+    noise_rng, time_rng = jax.random.split(rng)
 
-    noise = jax.random.normal(noise_rng, images.shape)
-    timesteps = jax.random.randint(timestep_rng, (images.shape[0],), 0, betas.shape[0])
+    x1 = jax.random.normal(noise_rng, images.shape)
+    t = jax.random.uniform(time_rng, (images.shape[0],), minval=0.0, maxval=1.0)
+    t_broadcast = t[:, None, None, None]
+    x_t = (1.0 - t_broadcast) * x1 + t_broadcast * images
+    target_velocity = images - x1
 
-    alphas = 1.0 - betas
-    alpha_cumprod = jnp.cumprod(alphas)
-    a_t = alpha_cumprod[timesteps]
-    a_t = a_t[:, None, None, None]
-    noisy_images = jnp.sqrt(a_t) * images + jnp.sqrt(1.0 - a_t) * noise
-
-    t_normalized = timesteps.astype(jnp.float32) / betas.shape[0]
-    pred_noise = state.apply_fn({"params": params}, noisy_images, t_normalized, labels)
-    loss = jnp.mean((pred_noise - noise) ** 2)
-    metrics = {"loss": loss}
+    pred_velocity = state.apply_fn({"params": params}, x_t, t, labels)
+    loss = jnp.mean((pred_velocity - target_velocity) ** 2)
+    metrics = {"loss": loss, "velocity_mse": loss}
     return loss, metrics
 
 
@@ -88,10 +79,9 @@ def train_step(
     state: TrainState,
     batch: dict[str, jax.Array],
     rng: jax.Array,
-    betas: jax.Array,
 ) -> tuple[TrainState, dict[str, jax.Array]]:
-    grad_fn = jax.value_and_grad(ddpm_loss, has_aux=True)
-    (loss, metrics), grads = grad_fn(state.params, state, batch, rng, betas)
+    grad_fn = jax.value_and_grad(flow_matching_loss, has_aux=True)
+    (loss, metrics), grads = grad_fn(state.params, state, batch, rng)
     state = state.apply_gradients(grads=grads)
     metrics["loss"] = loss
     return state, metrics
@@ -170,41 +160,28 @@ def restore_training_state(
 def sample_step(
     state: TrainState,
     x_t: jax.Array,
-    t_index: jax.Array,
+    t_scalar: jax.Array,
     labels: jax.Array,
-    betas: jax.Array,
-    alpha_cumprod: jax.Array,
-    rng: jax.Array,
 ) -> jax.Array:
-    t_normalized = t_index.astype(jnp.float32) / betas.shape[0]
-    t_vec = jnp.full((x_t.shape[0],), t_normalized, dtype=jnp.float32)
-    pred_noise = state.apply_fn({"params": state.params}, x_t, t_vec, labels)
-
-    alpha_t = 1.0 - betas[t_index]
-    alpha_bar_t = alpha_cumprod[t_index]
-    coef = (1.0 - alpha_t) / jnp.sqrt(1.0 - alpha_bar_t)
-    mean = (x_t - coef * pred_noise) / jnp.sqrt(alpha_t)
-
-    noise = jax.random.normal(rng, x_t.shape)
-    sigma = jnp.sqrt(betas[t_index])
-    nonzero_mask = (t_index > 0).astype(jnp.float32)
-    return mean + nonzero_mask * sigma * noise
+    t_vec = jnp.full((x_t.shape[0],), t_scalar, dtype=jnp.float32)
+    return state.apply_fn({"params": state.params}, x_t, t_vec, labels)
 
 
 def sample_images(
     state: TrainState,
     labels: np.ndarray,
-    betas: jax.Array,
-    alpha_cumprod: jax.Array,
     image_shape: tuple[int, int, int],
     seed: int,
+    num_steps: int,
 ) -> np.ndarray:
     rng = jax.random.PRNGKey(seed)
     x_t = jax.random.normal(rng, (labels.shape[0], *image_shape))
     labels_jax = jnp.asarray(labels, dtype=jnp.int32)
-    for t in reversed(range(int(betas.shape[0]))):
-        rng, step_rng = jax.random.split(rng)
-        x_t = sample_step(state, x_t, jnp.asarray(t, dtype=jnp.int32), labels_jax, betas, alpha_cumprod, step_rng)
+    dt = 1.0 / num_steps
+    for step in range(num_steps):
+        t_scalar = jnp.asarray(step * dt, dtype=jnp.float32)
+        velocity = sample_step(state, x_t, t_scalar, labels_jax)
+        x_t = x_t + dt * velocity
     return np.asarray(x_t)
 
 
@@ -220,7 +197,6 @@ def run_epoch_eval(
     state: TrainState,
     test_ds: NumpyDataset,
     config: ExpertTrainConfig,
-    betas: jax.Array,
     epoch: int,
     artifact_root: Path,
 ) -> dict[str, float]:
@@ -230,10 +206,9 @@ def run_epoch_eval(
     generated_images = sample_images(
         state,
         generated_labels,
-        betas,
-        jnp.cumprod(1.0 - betas),
         (config.image_size, config.image_size, config.num_channels),
         seed=config.seed + 20_000 + epoch,
+        num_steps=config.num_diffusion_steps,
     )
 
     real_for_fid = eval_ds.images[: min(len(eval_ds.images), len(generated_images))]
@@ -285,7 +260,6 @@ def train_expert(config: ExpertTrainConfig) -> None:
     rng = jax.random.PRNGKey(config.seed)
     init_rng, loop_rng = jax.random.split(rng)
     state = create_train_state(config, init_rng)
-    betas = make_beta_schedule(config.num_diffusion_steps)
     artifact_root = ensure_dir(Path(config.artifact_dir) / config.expert_name)
     metrics_dir = ensure_dir(artifact_root / "metrics")
 
@@ -305,7 +279,7 @@ def train_expert(config: ExpertTrainConfig) -> None:
         losses = []
         for batch in batch_iterator(train_ds, config.batch_size, seed=config.seed + epoch):
             loop_rng, step_rng = jax.random.split(loop_rng)
-            state, metrics = train_step(state, batch, step_rng, betas)
+            state, metrics = train_step(state, batch, step_rng)
             loss = float(metrics["loss"])
             losses.append(loss)
             global_step += 1
@@ -316,7 +290,7 @@ def train_expert(config: ExpertTrainConfig) -> None:
         print(f"epoch={epoch+1} train_loss={mean_loss:.6f}")
         epoch_metrics: dict[str, float] = {"epoch": epoch + 1, "train_loss": mean_loss}
         if (epoch + 1) % config.sample_every_epochs == 0:
-            eval_metrics = run_epoch_eval(state, test_ds, config, betas, epoch + 1, artifact_root)
+            eval_metrics = run_epoch_eval(state, test_ds, config, epoch + 1, artifact_root)
             epoch_metrics.update(eval_metrics)
             print(f"epoch={epoch+1} pca_fid={eval_metrics['pca_fid']:.6f}")
         metrics_history.append(epoch_metrics)
