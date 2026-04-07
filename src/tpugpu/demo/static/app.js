@@ -1,15 +1,41 @@
 const runButton = document.getElementById("runButton");
 const labelInput = document.getElementById("labelInput");
 const stepsInput = document.getElementById("stepsInput");
-const strategyInput = document.getElementById("strategyInput");
 const leftConnector = document.getElementById("lineUsEu");
 const rightConnector = document.getElementById("lineEuAsia");
 const expertLeft = document.querySelector(".tpu-pin");
 const expertRight = document.querySelector(".gpu-pin");
+const routerPin = document.querySelector(".router-pin");
+const mapWrap = document.querySelector(".map-wrap");
 const canvas = document.getElementById("stateCanvas");
 const ctx = canvas.getContext("2d");
 
 let currentSource = null;
+
+function pinCenter(pinElement) {
+  const dot = pinElement.querySelector(".pin-dot");
+  const mapRect = mapWrap.getBoundingClientRect();
+  const dotRect = dot.getBoundingClientRect();
+  const x = dotRect.left - mapRect.left + dotRect.width / 2;
+  const y = dotRect.top - mapRect.top + dotRect.height / 2;
+  return { x, y };
+}
+
+function updateConnectionLines() {
+  const left = pinCenter(expertLeft);
+  const router = pinCenter(routerPin);
+  const right = pinCenter(expertRight);
+
+  leftConnector.setAttribute("x1", `${left.x}`);
+  leftConnector.setAttribute("y1", `${left.y}`);
+  leftConnector.setAttribute("x2", `${router.x}`);
+  leftConnector.setAttribute("y2", `${router.y}`);
+
+  rightConnector.setAttribute("x1", `${router.x}`);
+  rightConnector.setAttribute("y1", `${router.y}`);
+  rightConnector.setAttribute("x2", `${right.x}`);
+  rightConnector.setAttribute("y2", `${right.y}`);
+}
 
 function drawFrame(flatPixels) {
   const imageData = ctx.createImageData(32, 32);
@@ -73,7 +99,7 @@ function startDemo() {
   const params = new URLSearchParams({
     label: labelInput.value,
     steps: stepsInput.value,
-    strategy: strategyInput.value,
+    strategy: "alternating",
   });
   const source = new EventSource(`/api/demo/stream?${params.toString()}`);
   currentSource = source;
@@ -109,4 +135,7 @@ function startDemo() {
 }
 
 runButton.addEventListener("click", startDemo);
+window.addEventListener("resize", updateConnectionLines);
+window.addEventListener("load", updateConnectionLines);
+updateConnectionLines();
 drawFrame(new Array(32 * 32).fill(0));
