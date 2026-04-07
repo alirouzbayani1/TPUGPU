@@ -25,12 +25,17 @@ body {
   font-family: "IBM Plex Sans", "Avenir Next", sans-serif;
   color: var(--text);
   background: var(--paper);
+  overflow: hidden;
 }
 
 .page {
-  max-width: 1400px;
+  max-width: 1380px;
   margin: 0 auto;
-  padding: 36px 28px 60px;
+  padding: 18px 24px 20px;
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 8px;
 }
 
 .hero h1 {
@@ -48,37 +53,23 @@ body {
   align-items: flex-start;
   justify-content: flex-start;
   gap: 20px;
-  margin-bottom: 18px;
+  margin-bottom: 2px;
 }
 
 .bagel-logo {
-  width: min(220px, 30vw);
-  max-width: 220px;
+  width: min(170px, 24vw);
+  max-width: 170px;
   height: auto;
   display: block;
 }
 
-.eyebrow {
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: 0.82rem;
-  margin-bottom: 12px;
-  font-family: "IBM Plex Mono", monospace;
-}
-
-.subhead {
-  max-width: 840px;
-  color: #5a463d;
-  font-size: 1.04rem;
-}
-
 .controls {
-  margin: 28px 0 40px;
+  margin: 10px 0 0;
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
   align-items: end;
+  justify-content: center;
 }
 
 .controls label {
@@ -113,7 +104,7 @@ body {
   min-height: 0;
   display: flex;
   justify-content: center;
-  margin-bottom: 12px;
+  margin-bottom: 0;
 }
 
 .router-card,
@@ -150,15 +141,16 @@ body {
 }
 
 .map-panel {
-  margin-top: 18px;
-  border-top: 1px solid rgba(227, 91, 47, 0.22);
-  padding: 18px 0 0;
+  margin-top: 0;
+  border-top: 0;
+  padding: 0;
 }
 
 .map-header {
-  margin-bottom: 12px;
+  margin-bottom: 6px;
   color: #5a463d;
-  font-size: 0.95rem;
+  font-size: 0.82rem;
+  text-align: center;
 }
 
 .map-header span {
@@ -176,13 +168,16 @@ body {
   border-radius: 0;
   background: transparent;
   border: 0;
+  max-height: 64vh;
 }
 
 .world-map {
   display: block;
   width: 100%;
-  height: auto;
-  opacity: 0.2;
+  max-height: 64vh;
+  object-fit: contain;
+  margin: 0 auto;
+  opacity: 0.18;
   mix-blend-mode: multiply;
   filter: sepia(1) saturate(4) hue-rotate(-10deg) brightness(0.82);
 }
@@ -195,12 +190,12 @@ body {
 }
 
 .pin-dot {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 999px;
   background: var(--brand);
   border: 2px solid #fff6ef;
-  box-shadow: 0 0 0 7px rgba(227, 91, 47, 0.12), 0 0 22px rgba(227, 91, 47, 0.35);
+  box-shadow: 0 0 0 8px rgba(227, 91, 47, 0.12), 0 0 26px rgba(227, 91, 47, 0.42);
 }
 
 .pin-label {
@@ -230,7 +225,7 @@ body {
 }
 
 .machine-card {
-  width: 180px;
+  width: 170px;
   background: rgba(255, 255, 255, 0.9);
   border-radius: 8px;
   padding: 10px 12px;
@@ -240,13 +235,18 @@ body {
   line-height: 1.6;
 }
 
+.map-pin.active .machine-card,
+.map-pin.active .pin-label {
+  color: var(--brand-deep);
+}
+
 .router-live-image {
-  width: 180px;
+  width: 150px;
 }
 
 #stateCanvas {
-  width: 180px;
-  height: 180px;
+  width: 150px;
+  height: 150px;
   display: block;
   image-rendering: pixelated;
   border-radius: 12px;
@@ -255,67 +255,75 @@ body {
 }
 
 .tpu-pin {
-  left: 14%;
-  top: 30%;
+  left: 15%;
+  top: 26%;
 }
 
 .router-pin {
-  left: 44%;
-  top: 18%;
+  left: 46%;
+  top: 15%;
 }
 
 .gpu-pin {
-  left: 74%;
-  top: 42%;
+  left: 75%;
+  top: 34%;
 }
 
 .map-link {
   position: absolute;
-  height: 3px;
-  background: linear-gradient(90deg, transparent 0%, rgba(227, 91, 47, 0.7) 15%, rgba(227, 91, 47, 0.7) 85%, transparent 100%);
+  height: 4px;
+  background: linear-gradient(90deg, transparent 0%, rgba(227, 91, 47, 0.9) 10%, rgba(227, 91, 47, 0.95) 50%, rgba(227, 91, 47, 0.9) 90%, transparent 100%);
   transform-origin: left center;
-  box-shadow: 0 0 18px rgba(227, 91, 47, 0.28);
-  opacity: 0.35;
+  box-shadow: 0 0 18px rgba(227, 91, 47, 0.38);
+  opacity: 0.55;
 }
 
 .map-link.active {
   opacity: 1;
-  box-shadow: 0 0 24px rgba(227, 91, 47, 0.45);
-  animation: pulseLine 0.22s linear;
+  box-shadow: 0 0 32px rgba(227, 91, 47, 0.7);
+  animation: pulseLine 0.18s linear;
 }
 
 .us-eu {
-  left: 18%;
-  top: 31.8%;
+  left: 16%;
+  top: 27.3%;
   width: 33%;
-  transform: rotate(-7deg);
+  transform: rotate(-6deg);
 }
 
 .eu-asia {
   left: 48%;
-  top: 22%;
-  width: 31%;
+  top: 19%;
+  width: 29%;
   transform: rotate(9deg);
 }
 
 @keyframes pulseLine {
-  0% { opacity: 0.45; }
+  0% { opacity: 0.6; transform: scaleX(0.97); }
   50% { opacity: 1; }
-  100% { opacity: 0.85; }
+  100% { opacity: 0.9; transform: scaleX(1); }
 }
 
 @media (max-width: 980px) {
   .machine-card,
   .router-live-image,
   #stateCanvas {
-    width: 150px;
+    width: 132px;
   }
 
   #stateCanvas {
-    height: 150px;
+    height: 132px;
   }
 
   .pin-label {
     min-width: 90px;
+  }
+
+  body {
+    overflow: auto;
+  }
+
+  .page {
+    height: auto;
   }
 }

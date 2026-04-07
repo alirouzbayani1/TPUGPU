@@ -18,32 +18,6 @@
         <div class="hero-top">
           <img class="bagel-logo" src="/static/assets/logo/bagel-logo.svg" alt="Bagel Labs" />
         </div>
-        <div class="eyebrow">Cross-Region DDM Demo</div>
-        <h1>Router-held diffusion state, streamed live, with remote expert calls on every denoising step.</h1>
-        <p class="subhead">
-          For this first UI pass, both expert nodes point at the same TPU expert. The purpose is to show the
-          distributed inference loop and router-controlled live state update.
-        </p>
-      </section>
-
-      <section class="controls">
-        <label>
-          Digit label
-          <input id="labelInput" type="number" min="0" max="9" value="2" />
-        </label>
-        <label>
-          Steps
-          <input id="stepsInput" type="number" min="10" max="200" value="40" />
-        </label>
-        <label>
-          Strategy
-          <select id="strategyInput">
-            <option value="alternating">Alternating</option>
-            <option value="switch_halfway">Switch Halfway</option>
-            <option value="oracle">Oracle</option>
-          </select>
-        </label>
-        <button id="runButton">Run Live Demo</button>
       </section>
 
       <section class="network">
@@ -108,6 +82,26 @@
           <div class="map-link us-eu"></div>
           <div class="map-link eu-asia"></div>
         </div>
+
+        <section class="controls">
+          <label>
+            Digit
+            <input id="labelInput" type="number" min="0" max="9" value="2" />
+          </label>
+          <label>
+            Steps
+            <input id="stepsInput" type="number" min="10" max="200" value="40" />
+          </label>
+          <label>
+            Route
+            <select id="strategyInput">
+              <option value="alternating">Alternating</option>
+              <option value="switch_halfway">Switch Halfway</option>
+              <option value="oracle">Oracle</option>
+            </select>
+          </label>
+          <button id="runButton">Run</button>
+        </section>
       </section>
     </main>
 
