@@ -138,3 +138,86 @@ def save_training_curves(history: list[dict[str, float]], path: str | Path) -> N
 
     fig.savefig(Path(path).expanduser().resolve(), bbox_inches="tight")
     plt.close(fig)
+
+
+def save_router_training_curves(history: list[dict[str, float]], path: str | Path) -> None:
+    epochs = [entry["epoch"] for entry in history]
+    train_losses = [entry.get("train_loss", np.nan) for entry in history]
+    train_accs = [entry.get("train_acc", np.nan) for entry in history]
+    eval_accs = [entry.get("eval_acc", np.nan) for entry in history]
+
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.5), constrained_layout=True)
+    axes[0].plot(epochs, train_losses, marker="o", color="#0f766e", linewidth=2)
+    axes[0].set_title("Router training loss")
+    axes[0].set_xlabel("Epoch")
+    axes[0].set_ylabel("Cross-entropy loss")
+
+    axes[1].plot(epochs, train_accs, marker="o", color="#1d4ed8", linewidth=2, label="Train")
+    axes[1].plot(epochs, eval_accs, marker="o", color="#b91c1c", linewidth=2, label="Eval")
+    axes[1].set_title("Router accuracy")
+    axes[1].set_xlabel("Epoch")
+    axes[1].set_ylabel("Accuracy")
+    axes[1].legend()
+
+    fig.savefig(Path(path).expanduser().resolve(), bbox_inches="tight")
+    plt.close(fig)
+
+
+def save_confusion_matrix(
+    matrix: np.ndarray,
+    path: str | Path,
+    title: str,
+    x_label: str,
+    y_label: str,
+    tick_labels: list[str],
+) -> None:
+    fig, ax = plt.subplots(figsize=(6, 5), constrained_layout=True)
+    im = ax.imshow(matrix, cmap="Blues")
+    ax.set_title(title)
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    ax.set_xticks(np.arange(len(tick_labels)))
+    ax.set_yticks(np.arange(len(tick_labels)))
+    ax.set_xticklabels(tick_labels)
+    ax.set_yticklabels(tick_labels)
+
+    for i in range(matrix.shape[0]):
+        for j in range(matrix.shape[1]):
+            ax.text(j, i, f"{matrix[i, j]:.0f}", ha="center", va="center", color="black", fontsize=9)
+
+    fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+    fig.savefig(Path(path).expanduser().resolve(), bbox_inches="tight")
+    plt.close(fig)
+
+
+def save_class_accuracy_bar(
+    class_accuracy: np.ndarray,
+    path: str | Path,
+    title: str,
+) -> None:
+    fig, ax = plt.subplots(figsize=(8, 4.5), constrained_layout=True)
+    ax.bar(np.arange(len(class_accuracy)), class_accuracy, color="#2563eb", width=0.75)
+    ax.set_xticks(np.arange(len(class_accuracy)))
+    ax.set_xlabel("Digit label")
+    ax.set_ylabel("Accuracy")
+    ax.set_ylim(0.0, 1.0)
+    ax.set_title(title)
+    fig.savefig(Path(path).expanduser().resolve(), bbox_inches="tight")
+    plt.close(fig)
+
+
+def save_expert_histogram(
+    expert_ids: np.ndarray,
+    num_experts: int,
+    path: str | Path,
+    title: str,
+) -> None:
+    counts = np.bincount(expert_ids.astype(np.int32), minlength=num_experts)
+    fig, ax = plt.subplots(figsize=(6, 4.5), constrained_layout=True)
+    ax.bar(np.arange(num_experts), counts, color="#7c3aed", width=0.75)
+    ax.set_xticks(np.arange(num_experts))
+    ax.set_xlabel("Expert ID")
+    ax.set_ylabel("Count")
+    ax.set_title(title)
+    fig.savefig(Path(path).expanduser().resolve(), bbox_inches="tight")
+    plt.close(fig)

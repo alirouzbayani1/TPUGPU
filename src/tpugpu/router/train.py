@@ -13,7 +13,14 @@ import optax
 import orbax.checkpoint as ocp
 
 from tpugpu.data.mnist import NumpyDataset, batch_iterator, load_mnist_numpy
-from tpugpu.eval.reporting import ensure_dir, save_json
+from tpugpu.eval.reporting import (
+    ensure_dir,
+    save_class_accuracy_bar,
+    save_confusion_matrix,
+    save_expert_histogram,
+    save_json,
+    save_router_training_curves,
+)
 from tpugpu.experts.train import create_train_state, latest_checkpoint_path
 from tpugpu.router.model import RouterMLP
 
@@ -120,6 +127,22 @@ def _interpolate_noisy_batch(images: jax.Array, seed: int) -> tuple[jax.Array, j
     return x_t, t
 
 
+def _compute_confusion_matrix(target: np.ndarray, pred: np.ndarray, num_experts: int) -> np.ndarray:
+    matrix = np.zeros((num_experts, num_experts), dtype=np.int32)
+    for true_idx, pred_idx in zip(target, pred):
+        matrix[int(true_idx), int(pred_idx)] += 1
+    return matrix
+
+
+def _compute_class_accuracy(labels: np.ndarray, target: np.ndarray, pred: np.ndarray, num_classes: int) -> np.ndarray:
+    acc = np.full((num_classes,), np.nan, dtype=np.float32)
+    for class_id in range(num_classes):
+        mask = labels == class_id
+        if np.any(mask):
+            acc[class_id] = float(np.mean(pred[mask] == target[mask]))
+    return acc
+
+
 def train_router(config: RouterTrainConfig) -> None:
     if config.label_mode != "oracle":
         raise NotImplementedError("Only oracle label_mode is implemented right now.")
@@ -138,6 +161,7 @@ def train_router(config: RouterTrainConfig) -> None:
     state = _create_router_state(config, init_rng)
 
     artifact_root = ensure_dir(Path(config.artifact_dir) / config.router_name)
+    metrics_dir = ensure_dir(artifact_root / "metrics")
     metrics_history: list[dict[str, float]] = []
 
     print("router_config:", asdict(config))
@@ -164,27 +188,64 @@ def train_router(config: RouterTrainConfig) -> None:
             losses.append(float(metrics["loss"]))
             accs.append(float(metrics["acc"]))
 
+        eval_labels = np.asarray(test_ds.labels[: config.batch_size], dtype=np.int32)
         eval_x_t, eval_t = _interpolate_noisy_batch(jnp.asarray(test_ds.images[: config.batch_size]), seed=config.seed + 999_999 + epoch)
         eval_logits = state.apply_fn(
             {"params": state.params},
             eval_x_t,
             eval_t,
-            jnp.asarray(test_ds.labels[: config.batch_size], dtype=jnp.int32),
+            jnp.asarray(eval_labels, dtype=jnp.int32),
         )
         eval_pred = np.asarray(jnp.argmax(eval_logits, axis=-1), dtype=np.int32)
         eval_target = test_targets[: config.batch_size]
         eval_acc = float(np.mean(eval_pred == eval_target))
+        confusion = _compute_confusion_matrix(eval_target, eval_pred, len(config.expert_names))
+        class_accuracy = _compute_class_accuracy(eval_labels, eval_target, eval_pred, config.num_classes)
+        eval_pred_hist = np.bincount(eval_pred, minlength=len(config.expert_names))
 
         entry = {
             "epoch": epoch + 1,
             "train_loss": float(np.mean(losses)),
             "train_acc": float(np.mean(accs)),
             "eval_acc": eval_acc,
+            "eval_pred_histogram": eval_pred_hist.tolist(),
         }
         metrics_history.append(entry)
         print(
             f"epoch={epoch+1} router_train_loss={entry['train_loss']:.6f} "
             f"router_train_acc={entry['train_acc']:.6f} router_eval_acc={entry['eval_acc']:.6f}"
+        )
+        epoch_dir = ensure_dir(artifact_root / f"epoch_{epoch + 1:03d}")
+        save_confusion_matrix(
+            confusion.astype(np.float32),
+            epoch_dir / "router_confusion_matrix.png",
+            f"Router confusion matrix epoch {epoch + 1}",
+            x_label="Predicted expert",
+            y_label="Target expert",
+            tick_labels=[f"E{i}" for i in range(len(config.expert_names))],
+        )
+        save_class_accuracy_bar(
+            np.nan_to_num(class_accuracy, nan=0.0),
+            epoch_dir / "router_class_accuracy.png",
+            f"Router class accuracy epoch {epoch + 1}",
+        )
+        save_expert_histogram(
+            eval_pred,
+            len(config.expert_names),
+            epoch_dir / "router_predicted_expert_histogram.png",
+            f"Predicted expert histogram epoch {epoch + 1}",
+        )
+        save_json(
+            {
+                "epoch": epoch + 1,
+                "eval_target": eval_target.tolist(),
+                "eval_pred": eval_pred.tolist(),
+                "eval_labels": eval_labels.tolist(),
+                "confusion_matrix": confusion.tolist(),
+                "class_accuracy": np.nan_to_num(class_accuracy, nan=-1.0).tolist(),
+                "eval_pred_histogram": eval_pred_hist.tolist(),
+            },
+            epoch_dir / "router_eval_details.json",
         )
         save_json(
             {
@@ -192,8 +253,9 @@ def train_router(config: RouterTrainConfig) -> None:
                 "expert_checkpoints": expert_checkpoint_paths,
                 "history": metrics_history,
             },
-            artifact_root / "history.json",
+            metrics_dir / "history.json",
         )
+        save_router_training_curves(metrics_history, metrics_dir / "router_training_curves.png")
 
     summary = {
         "config": asdict(config),
