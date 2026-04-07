@@ -41,12 +41,20 @@ function clearGlow() {
 }
 
 function restartPulse(element) {
+  console.log("restartPulse", element?.id || element?.className || element);
   element.classList.remove("active");
   void element.offsetWidth;
   element.classList.add("active");
+  console.log("restartPulse classes", element?.className || element);
 }
 
 function flashExpert(expertId) {
+  console.log("flashExpert", expertId, {
+    leftConnector,
+    rightConnector,
+    expertLeft,
+    expertRight,
+  });
   clearGlow();
   if (expertId === 0) {
     restartPulse(leftConnector);
@@ -76,6 +84,7 @@ function startDemo() {
 
   source.onmessage = (event) => {
     const payload = JSON.parse(event.data);
+    console.log("demo event payload", payload);
     drawFrame(payload.frame);
 
     if (payload.type === "start") {
