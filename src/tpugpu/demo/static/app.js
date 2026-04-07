@@ -40,18 +40,23 @@ function clearGlow() {
   routerCard.classList.remove("active");
 }
 
+function restartPulse(element) {
+  element.classList.remove("active");
+  void element.offsetWidth;
+  element.classList.add("active");
+}
+
 function flashExpert(expertId) {
   clearGlow();
-  routerCard.classList.add("active");
   if (expertId === 0) {
-    leftConnector.classList.add("active");
-    expertLeft.classList.add("active");
+    restartPulse(leftConnector);
+    restartPulse(expertLeft);
   } else if (expertId === 1) {
-    rightConnector.classList.add("active");
-    expertRight.classList.add("active");
+    restartPulse(rightConnector);
+    restartPulse(expertRight);
   }
 
-  window.setTimeout(clearGlow, 120);
+  window.setTimeout(clearGlow, 180);
 }
 
 function startDemo() {
