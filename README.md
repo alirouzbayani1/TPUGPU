@@ -14,6 +14,7 @@ Use these documents as the source of truth for project execution:
 
 - [PROJECT_PLAN.md](/Users/ali/projects/TPUGPU/PROJECT_PLAN.md)
 - [docs/TPU_VM_SETUP.md](/Users/ali/projects/TPUGPU/docs/TPU_VM_SETUP.md)
+- [docs/GPU_VM_SETUP.md](/Users/ali/projects/TPUGPU/docs/GPU_VM_SETUP.md)
 - [docs/TPU_FIRST_DDM_GUIDE.md](/Users/ali/projects/TPUGPU/docs/TPU_FIRST_DDM_GUIDE.md)
 
 `docs/TPU_VM_SETUP.md` is the exact bring-up guide for reproducing the working TPU VM state that already ran the first MNIST expert successfully.
