@@ -19,6 +19,7 @@ class ExpertTrainConfig:
     eval_num_real: int = 512
     eval_num_generated: int = 512
     eval_batch_size: int = 128
+    resume: bool = False
     cluster_assignments_path: str | None = None
     cluster_id: int | None = None
     seed: int = 0

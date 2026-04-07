@@ -106,6 +106,57 @@ def save_checkpoint(state: TrainState, checkpoint_dir: str, step: int, metadata:
     checkpointer.save(path, ckpt, force=True)
 
 
+def latest_checkpoint_path(checkpoint_dir: str) -> str | None:
+    checkpoint_root = Path(checkpoint_dir).expanduser().resolve()
+    if not checkpoint_root.exists():
+        return None
+    candidates = []
+    for child in checkpoint_root.iterdir():
+        if child.is_dir() and child.name.startswith("step_"):
+            try:
+                step = int(child.name.split("_", 1)[1])
+            except ValueError:
+                continue
+            candidates.append((step, child))
+    if not candidates:
+        return None
+    return str(max(candidates, key=lambda item: item[0])[1])
+
+
+def load_json(path: str | Path) -> dict | None:
+    path = Path(path).expanduser().resolve()
+    if not path.exists():
+        return None
+    import json
+
+    with path.open() as f:
+        return json.load(f)
+
+
+def restore_training_state(
+    config: ExpertTrainConfig,
+    state: TrainState,
+    artifact_root: Path,
+) -> tuple[TrainState, int, int, list[dict[str, float]]]:
+    checkpoint_dir = os.path.join(config.checkpoint_dir, config.expert_name)
+    checkpoint_path = latest_checkpoint_path(checkpoint_dir)
+    history_payload = load_json(artifact_root / "metrics" / "history.json")
+    metrics_history = history_payload["history"] if history_payload is not None else []
+
+    if checkpoint_path is None:
+        return state, 0, 0, metrics_history
+
+    checkpointer = ocp.PyTreeCheckpointer()
+    restored = checkpointer.restore(checkpoint_path)
+    restored_state = restored["state"]
+    restored_metadata = restored.get("metadata", {})
+    global_step = int(restored_metadata.get("global_step", 0))
+    start_epoch = int(metrics_history[-1]["epoch"]) if metrics_history else 0
+    print(f"resumed from checkpoint: {checkpoint_path}")
+    print(f"resume global_step={global_step} start_epoch={start_epoch}")
+    return restored_state, global_step, start_epoch, metrics_history
+
+
 @jax.jit
 def sample_step(
     state: TrainState,
@@ -236,8 +287,12 @@ def train_expert(config: ExpertTrainConfig) -> None:
     print("backend:", jax.default_backend())
 
     global_step = 0
+    start_epoch = 0
     metrics_history: list[dict[str, float]] = []
-    for epoch in range(config.num_epochs):
+    if config.resume:
+        state, global_step, start_epoch, metrics_history = restore_training_state(config, state, artifact_root)
+
+    for epoch in range(start_epoch, config.num_epochs):
         losses = []
         for batch in batch_iterator(train_ds, config.batch_size, seed=config.seed + epoch):
             loop_rng, step_rng = jax.random.split(loop_rng)
