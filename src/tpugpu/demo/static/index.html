@@ -48,20 +48,6 @@
       </section>
 
       <section class="network">
-        <div class="expert-card left" id="expertLeft">
-          <div class="chip-icon">TPU</div>
-          <div class="card-meta">
-            <div class="card-title">Expert A</div>
-            <div class="card-subtitle">US TPU backend</div>
-            <div class="spec-grid">
-              <div><span>device</span><strong>v6e-1</strong></div>
-              <div><span>region</span><strong>us-east5-a</strong></div>
-              <div><span>expert</span><strong>strict_0_4_fm</strong></div>
-              <div><span>stack</span><strong>JAX / XLA</strong></div>
-            </div>
-          </div>
-        </div>
-
         <div class="router-stack">
           <div class="router-canvas-wrap">
             <canvas id="stateCanvas" width="320" height="320"></canvas>
@@ -69,17 +55,7 @@
           </div>
 
           <div class="router-card" id="routerCard">
-            <div class="chip-icon router-icon">RTR</div>
-            <div class="card-meta">
-              <div class="card-title">Router</div>
-              <div class="card-subtitle">Europe orchestrator</div>
-              <div class="spec-grid">
-                <div><span>region</span><strong>europe-west4-a</strong></div>
-                <div><span>mode</span><strong>top-1 step routing</strong></div>
-                <div><span>state</span><strong>x_t, t, y</strong></div>
-                <div><span>transport</span><strong>binary RPC</strong></div>
-              </div>
-            </div>
+            <div class="router-inline-title">router / europe-west4-a / x_t,t,y / top-1 step routing</div>
           </div>
 
           <div class="status-panel">
@@ -89,23 +65,6 @@
             <div><span>Current policy</span><strong id="policyValue">alternating</strong></div>
           </div>
         </div>
-
-        <div class="expert-card right" id="expertRight">
-          <div class="chip-icon">TPU</div>
-          <div class="card-meta">
-            <div class="card-title">Expert B</div>
-            <div class="card-subtitle">Same TPU, second node</div>
-            <div class="spec-grid">
-              <div><span>device</span><strong>v6e-1</strong></div>
-              <div><span>region</span><strong>us-east5-a</strong></div>
-              <div><span>expert</span><strong>strict_0_4_fm</strong></div>
-              <div><span>role</span><strong>mirrored node</strong></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="connector left-connector" id="leftConnector"></div>
-        <div class="connector right-connector" id="rightConnector"></div>
       </section>
 
       <section class="technical-strip">
@@ -153,6 +112,29 @@
 
           <div class="map-link us-eu"></div>
           <div class="map-link eu-asia"></div>
+        </div>
+        <div class="machine-specs">
+          <div class="machine-row">
+            <strong>TPU expert A</strong>
+            <span>device: v6e-1</span>
+            <span>region: us-east5-a</span>
+            <span>expert: strict_0_4_fm</span>
+            <span>stack: jax / xla</span>
+          </div>
+          <div class="machine-row">
+            <strong>Router</strong>
+            <span>device: cpu vm</span>
+            <span>region: europe-west4-a</span>
+            <span>state: x_t, t, y</span>
+            <span>transport: binary rpc</span>
+          </div>
+          <div class="machine-row">
+            <strong>GPU expert B</strong>
+            <span>device: a100 40gb</span>
+            <span>region: asia-southeast1-a</span>
+            <span>role: second expert target</span>
+            <span>status: training path in progress</span>
+          </div>
         </div>
       </section>
     </main>
