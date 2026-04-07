@@ -15,6 +15,7 @@ class ExpertTrainConfig:
     checkpoint_dir: str = "./outputs/checkpoints"
     artifact_dir: str = "./outputs/experiments"
     log_every_steps: int = 50
+    checkpoint_every_epochs: int = 1
     sample_every_epochs: int = 1
     eval_num_real: int = 512
     eval_num_generated: int = 512

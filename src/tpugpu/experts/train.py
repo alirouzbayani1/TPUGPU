@@ -275,6 +275,8 @@ def train_expert(config: ExpertTrainConfig) -> None:
     if config.resume:
         state, global_step, start_epoch, metrics_history = restore_training_state(config, state, artifact_root)
 
+    checkpoint_dir = os.path.join(config.checkpoint_dir, config.expert_name)
+
     for epoch in range(start_epoch, config.num_epochs):
         losses = []
         for batch in batch_iterator(train_ds, config.batch_size, seed=config.seed + epoch):
@@ -289,6 +291,10 @@ def train_expert(config: ExpertTrainConfig) -> None:
         mean_loss = float(np.mean(losses)) if losses else float("nan")
         print(f"epoch={epoch+1} train_loss={mean_loss:.6f}")
         epoch_metrics: dict[str, float] = {"epoch": epoch + 1, "train_loss": mean_loss}
+        if config.checkpoint_every_epochs > 0 and (epoch + 1) % config.checkpoint_every_epochs == 0:
+            metadata = {"config": asdict(config), "global_step": global_step, "epoch": epoch + 1}
+            save_checkpoint(state, checkpoint_dir, global_step, metadata)
+            print(f"epoch={epoch+1} saved checkpoint to {checkpoint_dir}")
         if (epoch + 1) % config.sample_every_epochs == 0:
             eval_metrics = run_epoch_eval(state, test_ds, config, epoch + 1, artifact_root)
             epoch_metrics.update(eval_metrics)
@@ -298,6 +304,5 @@ def train_expert(config: ExpertTrainConfig) -> None:
         save_training_curves(metrics_history, metrics_dir / "training_curves.png")
 
     metadata = {"config": asdict(config), "global_step": global_step}
-    checkpoint_dir = os.path.join(config.checkpoint_dir, config.expert_name)
     save_checkpoint(state, checkpoint_dir, global_step, metadata)
     print(f"saved checkpoint to {checkpoint_dir}")
