@@ -16,8 +16,42 @@ Use these documents as the source of truth for project execution:
 - [docs/TPU_VM_SETUP.md](/Users/ali/projects/TPUGPU/docs/TPU_VM_SETUP.md)
 - [docs/GPU_VM_SETUP.md](/Users/ali/projects/TPUGPU/docs/GPU_VM_SETUP.md)
 - [docs/TPU_FIRST_DDM_GUIDE.md](/Users/ali/projects/TPUGPU/docs/TPU_FIRST_DDM_GUIDE.md)
+- [docs/EXPERTS_README.md](/Users/ali/projects/TPUGPU/docs/EXPERTS_README.md)
+- [docs/ROUTER_README.md](/Users/ali/projects/TPUGPU/docs/ROUTER_README.md)
+- [docs/SERVING_README.md](/Users/ali/projects/TPUGPU/docs/SERVING_README.md)
+- [docs/LIVE_DEMO_README.md](/Users/ali/projects/TPUGPU/docs/LIVE_DEMO_README.md)
 
 `docs/TPU_VM_SETUP.md` is the exact bring-up guide for reproducing the working TPU VM state that already ran the first MNIST expert successfully.
+
+## Repo Map
+
+The repo now has four main end-to-end tracks:
+
+- `experts`
+  - training the flow-matching MNIST experts on TPU and GPU
+- `router`
+  - training the noisy-state router
+- `distributed serving`
+  - remote expert inference over the network
+- `live demo`
+  - public web app running on the EU router VM
+
+Read these in order if you want the current full system:
+
+1. [docs/EXPERTS_README.md](/Users/ali/projects/TPUGPU/docs/EXPERTS_README.md)
+2. [docs/ROUTER_README.md](/Users/ali/projects/TPUGPU/docs/ROUTER_README.md)
+3. [docs/SERVING_README.md](/Users/ali/projects/TPUGPU/docs/SERVING_README.md)
+4. [docs/LIVE_DEMO_README.md](/Users/ali/projects/TPUGPU/docs/LIVE_DEMO_README.md)
+
+## Current Live State
+
+As of the current repo state:
+
+- TPU expert exists and is serving
+- router training baseline exists and completed
+- distributed TPU-only serving works from Europe to the US
+- public demo UI is live on the EU router VM
+- far-region A100 expert is the main unfinished piece for true two-expert routing
 
 ## Why This Repo Exists
 
