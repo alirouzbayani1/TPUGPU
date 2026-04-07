@@ -35,6 +35,26 @@ function updateConnectionLines() {
   rightConnector.setAttribute("y1", `${router.y}`);
   rightConnector.setAttribute("x2", `${right.x}`);
   rightConnector.setAttribute("y2", `${right.y}`);
+
+  console.log("connection-debug", {
+    pinCenters: {
+      tpu: left,
+      router,
+      gpu: right,
+    },
+    lineUsEu: {
+      x1: leftConnector.getAttribute("x1"),
+      y1: leftConnector.getAttribute("y1"),
+      x2: leftConnector.getAttribute("x2"),
+      y2: leftConnector.getAttribute("y2"),
+    },
+    lineEuAsia: {
+      x1: rightConnector.getAttribute("x1"),
+      y1: rightConnector.getAttribute("y1"),
+      x2: rightConnector.getAttribute("x2"),
+      y2: rightConnector.getAttribute("y2"),
+    },
+  });
 }
 
 function drawFrame(flatPixels) {
