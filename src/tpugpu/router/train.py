@@ -201,9 +201,10 @@ def train_router(config: RouterTrainConfig) -> None:
         eval_pred = np.asarray(jnp.argmax(eval_logits, axis=-1), dtype=np.int32)
         eval_target = test_targets[: config.batch_size]
         eval_acc = float(np.mean(eval_pred == eval_target))
-        confusion = _compute_confusion_matrix(eval_target, eval_pred, len(config.expert_names))
+        num_experts = len(config.expert_label_splits)
+        confusion = _compute_confusion_matrix(eval_target, eval_pred, num_experts)
         class_accuracy = _compute_class_accuracy(eval_labels, eval_target, eval_pred, config.num_classes)
-        eval_pred_hist = np.bincount(eval_pred, minlength=len(config.expert_names))
+        eval_pred_hist = np.bincount(eval_pred, minlength=num_experts)
 
         entry = {
             "epoch": epoch + 1,
@@ -224,7 +225,7 @@ def train_router(config: RouterTrainConfig) -> None:
             f"Router confusion matrix epoch {epoch + 1}",
             x_label="Predicted expert",
             y_label="Target expert",
-            tick_labels=[f"E{i}" for i in range(len(config.expert_names))],
+            tick_labels=[f"E{i}" for i in range(num_experts)],
         )
         save_class_accuracy_bar(
             np.nan_to_num(class_accuracy, nan=0.0),
@@ -233,7 +234,7 @@ def train_router(config: RouterTrainConfig) -> None:
         )
         save_expert_histogram(
             eval_pred,
-            len(config.expert_names),
+            num_experts,
             epoch_dir / "router_predicted_expert_histogram.png",
             f"Predicted expert histogram epoch {epoch + 1}",
         )
