@@ -318,6 +318,124 @@ body {
   text-transform: lowercase;
 }
 
+.map-panel {
+  margin-top: 30px;
+  border: 1px solid rgba(227, 91, 47, 0.22);
+  border-radius: 28px;
+  background: rgba(250, 247, 242, 0.86);
+  padding: 18px 18px 22px;
+  box-shadow: 0 28px 70px rgba(109, 63, 35, 0.08);
+}
+
+.map-header {
+  margin-bottom: 12px;
+  color: #5a463d;
+  font-size: 0.95rem;
+}
+
+.map-header span {
+  display: block;
+  margin-bottom: 8px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  color: var(--brand);
+  text-transform: lowercase;
+}
+
+.map-wrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #efe8df 0%, #f7f3ee 100%);
+  border: 1px solid rgba(227, 91, 47, 0.18);
+}
+
+.world-map {
+  display: block;
+  width: 100%;
+  height: auto;
+  opacity: 0.2;
+  mix-blend-mode: multiply;
+  filter: sepia(1) saturate(4) hue-rotate(-10deg) brightness(0.82);
+}
+
+.map-pin {
+  position: absolute;
+  z-index: 2;
+}
+
+.pin-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--brand);
+  border: 2px solid #fff6ef;
+  box-shadow: 0 0 0 7px rgba(227, 91, 47, 0.12), 0 0 22px rgba(227, 91, 47, 0.35);
+}
+
+.pin-label {
+  margin-top: 8px;
+  min-width: 110px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: rgba(255, 250, 245, 0.92);
+  border: 1px solid rgba(227, 91, 47, 0.18);
+  box-shadow: 0 12px 30px rgba(109, 63, 35, 0.08);
+}
+
+.pin-label strong {
+  display: block;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: lowercase;
+}
+
+.pin-label span {
+  display: block;
+  margin-top: 4px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.tpu-pin {
+  left: 17%;
+  top: 30%;
+}
+
+.router-pin {
+  left: 47%;
+  top: 20%;
+}
+
+.gpu-pin {
+  left: 76%;
+  top: 42%;
+}
+
+.map-link {
+  position: absolute;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(227, 91, 47, 0.7) 15%, rgba(227, 91, 47, 0.7) 85%, transparent 100%);
+  transform-origin: left center;
+  box-shadow: 0 0 18px rgba(227, 91, 47, 0.28);
+}
+
+.us-eu {
+  left: 18%;
+  top: 31.8%;
+  width: 33%;
+  transform: rotate(-7deg);
+}
+
+.eu-asia {
+  left: 48%;
+  top: 22%;
+  width: 31%;
+  transform: rotate(9deg);
+}
+
 @media (max-width: 980px) {
   .network {
     grid-template-columns: 1fr;
@@ -330,5 +448,9 @@ body {
 
   .technical-strip {
     grid-template-columns: 1fr;
+  }
+
+  .pin-label {
+    min-width: 90px;
   }
 }

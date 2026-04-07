@@ -118,6 +118,43 @@
           Both visible expert nodes currently resolve to the same TPU backend so the UI can focus on the distributed control loop.
         </div>
       </section>
+
+      <section class="map-panel">
+        <div class="map-header">
+          <span>global machine layout</span>
+          TPU expert in the US, router in Europe, GPU expert in Asia.
+        </div>
+        <div class="map-wrap">
+          <img class="world-map" src="/static/assets/graphics/world-map.png" alt="World map" />
+
+          <div class="map-pin tpu-pin">
+            <div class="pin-dot"></div>
+            <div class="pin-label">
+              <strong>TPU expert</strong>
+              <span>us-east5-a</span>
+            </div>
+          </div>
+
+          <div class="map-pin router-pin">
+            <div class="pin-dot"></div>
+            <div class="pin-label">
+              <strong>Router</strong>
+              <span>europe-west4-a</span>
+            </div>
+          </div>
+
+          <div class="map-pin gpu-pin">
+            <div class="pin-dot"></div>
+            <div class="pin-label">
+              <strong>GPU expert</strong>
+              <span>asia-southeast1-a</span>
+            </div>
+          </div>
+
+          <div class="map-link us-eu"></div>
+          <div class="map-link eu-asia"></div>
+        </div>
+      </section>
     </main>
 
     <script src="/static/app.js"></script>
