@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 import jax.numpy as jnp
 import numpy as np
@@ -44,6 +45,26 @@ def load_mnist_numpy(image_size: int = 32) -> tuple[NumpyDataset, NumpyDataset]:
 
 def filter_by_class_ids(dataset: NumpyDataset, class_ids: tuple[int, ...]) -> NumpyDataset:
     mask = np.isin(dataset.labels, np.asarray(class_ids, dtype=np.int32))
+    return NumpyDataset(dataset.images[mask], dataset.labels[mask])
+
+
+def split_cluster_assignments(cluster_assignments_path: str) -> tuple[np.ndarray, np.ndarray]:
+    cluster_ids = np.load(Path(cluster_assignments_path).expanduser().resolve())
+    if cluster_ids.shape[0] != 70000:
+        raise ValueError(f"Expected 70,000 cluster assignments for MNIST, got {cluster_ids.shape[0]}")
+    return cluster_ids[:60000].astype(np.int32), cluster_ids[60000:].astype(np.int32)
+
+
+def filter_by_cluster_id(
+    dataset: NumpyDataset,
+    cluster_ids: np.ndarray,
+    cluster_id: int,
+) -> NumpyDataset:
+    if dataset.labels.shape[0] != cluster_ids.shape[0]:
+        raise ValueError(
+            f"Dataset length {dataset.labels.shape[0]} does not match cluster id length {cluster_ids.shape[0]}"
+        )
+    mask = cluster_ids == np.int32(cluster_id)
     return NumpyDataset(dataset.images[mask], dataset.labels[mask])
 
 

@@ -2,17 +2,35 @@ from __future__ import annotations
 
 import os
 from dataclasses import asdict
+from pathlib import Path
 
 import flax
 from flax.training import train_state
 import jax
+import jax.image
 import jax.numpy as jnp
 import numpy as np
 import optax
 import orbax.checkpoint as ocp
 
 from tpugpu.config import ExpertTrainConfig
-from tpugpu.data.mnist import batch_iterator, filter_by_class_ids, load_mnist_numpy
+from tpugpu.data.mnist import (
+    NumpyDataset,
+    batch_iterator,
+    filter_by_class_ids,
+    filter_by_cluster_id,
+    load_mnist_numpy,
+    split_cluster_assignments,
+)
+from tpugpu.eval.reporting import (
+    compute_pca_fid,
+    ensure_dir,
+    save_image_grid,
+    save_json,
+    save_label_histogram,
+    save_training_curves,
+    save_tsne_plot,
+)
 from tpugpu.experts.model import SmallConditionalUNet
 
 
@@ -88,15 +106,128 @@ def save_checkpoint(state: TrainState, checkpoint_dir: str, step: int, metadata:
     checkpointer.save(path, ckpt, force=True)
 
 
-def train_expert(config: ExpertTrainConfig) -> None:
+@jax.jit
+def sample_step(
+    state: TrainState,
+    x_t: jax.Array,
+    t_index: jax.Array,
+    labels: jax.Array,
+    betas: jax.Array,
+    alpha_cumprod: jax.Array,
+    rng: jax.Array,
+) -> jax.Array:
+    t_normalized = t_index.astype(jnp.float32) / betas.shape[0]
+    t_vec = jnp.full((x_t.shape[0],), t_normalized, dtype=jnp.float32)
+    pred_noise = state.apply_fn({"params": state.params}, x_t, t_vec, labels)
+
+    alpha_t = 1.0 - betas[t_index]
+    alpha_bar_t = alpha_cumprod[t_index]
+    coef = (1.0 - alpha_t) / jnp.sqrt(1.0 - alpha_bar_t)
+    mean = (x_t - coef * pred_noise) / jnp.sqrt(alpha_t)
+
+    noise = jax.random.normal(rng, x_t.shape)
+    sigma = jnp.sqrt(betas[t_index])
+    nonzero_mask = (t_index > 0).astype(jnp.float32)
+    return mean + nonzero_mask * sigma * noise
+
+
+def sample_images(
+    state: TrainState,
+    labels: np.ndarray,
+    betas: jax.Array,
+    alpha_cumprod: jax.Array,
+    image_shape: tuple[int, int, int],
+    seed: int,
+) -> np.ndarray:
+    rng = jax.random.PRNGKey(seed)
+    x_t = jax.random.normal(rng, (labels.shape[0], *image_shape))
+    labels_jax = jnp.asarray(labels, dtype=jnp.int32)
+    for t in reversed(range(int(betas.shape[0]))):
+        rng, step_rng = jax.random.split(rng)
+        x_t = sample_step(state, x_t, jnp.asarray(t, dtype=jnp.int32), labels_jax, betas, alpha_cumprod, step_rng)
+    return np.asarray(x_t)
+
+
+def build_eval_subset(dataset: NumpyDataset, num_examples: int, seed: int) -> NumpyDataset:
+    rng = np.random.default_rng(seed)
+    indices = np.arange(dataset.labels.shape[0])
+    if num_examples < len(indices):
+        indices = rng.choice(indices, size=num_examples, replace=False)
+    return NumpyDataset(dataset.images[indices], dataset.labels[indices])
+
+
+def run_epoch_eval(
+    state: TrainState,
+    test_ds: NumpyDataset,
+    config: ExpertTrainConfig,
+    betas: jax.Array,
+    epoch: int,
+    artifact_root: Path,
+) -> dict[str, float]:
+    eval_ds = build_eval_subset(test_ds, config.eval_num_real, seed=config.seed + epoch)
+    label_rng = np.random.default_rng(config.seed + 10_000 + epoch)
+    generated_labels = label_rng.choice(eval_ds.labels, size=config.eval_num_generated, replace=True)
+    generated_images = sample_images(
+        state,
+        generated_labels,
+        betas,
+        jnp.cumprod(1.0 - betas),
+        (config.image_size, config.image_size, config.num_channels),
+        seed=config.seed + 20_000 + epoch,
+    )
+
+    real_for_fid = eval_ds.images[: min(len(eval_ds.images), len(generated_images))]
+    gen_for_fid = generated_images[: len(real_for_fid)]
+    labels_for_grid = generated_labels[: min(64, len(generated_labels))]
+
+    epoch_dir = ensure_dir(artifact_root / f"epoch_{epoch:03d}")
+    save_image_grid(generated_images[:64], labels_for_grid, epoch_dir / "generated_grid.png", f"Generated samples epoch {epoch}")
+    save_label_histogram(generated_labels, epoch_dir / "generated_label_histogram.png", f"Generated label mix epoch {epoch}")
+    save_tsne_plot(
+        real_for_fid[:200],
+        gen_for_fid[:200],
+        eval_ds.labels[:200],
+        generated_labels[:200],
+        epoch_dir / "generated_tsne.png",
+        f"Real vs generated t-SNE epoch {epoch}",
+        seed=config.seed + 30_000 + epoch,
+    )
+
+    pca_fid = compute_pca_fid(real_for_fid, gen_for_fid)
+    metrics = {
+        "epoch": epoch,
+        "num_real_eval": int(real_for_fid.shape[0]),
+        "num_generated_eval": int(gen_for_fid.shape[0]),
+        "pca_fid": float(pca_fid),
+    }
+    save_json(metrics, epoch_dir / "metrics.json")
+    return metrics
+
+
+def resolve_datasets(config: ExpertTrainConfig) -> tuple[NumpyDataset, NumpyDataset]:
     train_ds, test_ds = load_mnist_numpy(image_size=config.image_size)
+    if config.cluster_assignments_path is not None:
+        if config.cluster_id is None:
+            raise ValueError("cluster_id must be set when cluster_assignments_path is provided")
+        train_cluster_ids, test_cluster_ids = split_cluster_assignments(config.cluster_assignments_path)
+        train_ds = filter_by_cluster_id(train_ds, train_cluster_ids, config.cluster_id)
+        test_ds = filter_by_cluster_id(test_ds, test_cluster_ids, config.cluster_id)
+        return train_ds, test_ds
+
     train_ds = filter_by_class_ids(train_ds, config.class_ids)
     test_ds = filter_by_class_ids(test_ds, config.class_ids)
+    return train_ds, test_ds
+
+
+def train_expert(config: ExpertTrainConfig) -> None:
+    train_ds, test_ds = resolve_datasets(config)
 
     rng = jax.random.PRNGKey(config.seed)
     init_rng, loop_rng = jax.random.split(rng)
     state = create_train_state(config, init_rng)
     betas = make_beta_schedule(config.num_diffusion_steps)
+    artifact_root = ensure_dir(Path(config.artifact_dir) / config.expert_name)
+    metrics_dir = ensure_dir(artifact_root / "metrics")
 
     print("config:", asdict(config))
     print("train samples:", len(train_ds.labels))
@@ -105,6 +236,7 @@ def train_expert(config: ExpertTrainConfig) -> None:
     print("backend:", jax.default_backend())
 
     global_step = 0
+    metrics_history: list[dict[str, float]] = []
     for epoch in range(config.num_epochs):
         losses = []
         for batch in batch_iterator(train_ds, config.batch_size, seed=config.seed + epoch):
@@ -118,6 +250,14 @@ def train_expert(config: ExpertTrainConfig) -> None:
 
         mean_loss = float(np.mean(losses)) if losses else float("nan")
         print(f"epoch={epoch+1} train_loss={mean_loss:.6f}")
+        epoch_metrics: dict[str, float] = {"epoch": epoch + 1, "train_loss": mean_loss}
+        if (epoch + 1) % config.sample_every_epochs == 0:
+            eval_metrics = run_epoch_eval(state, test_ds, config, betas, epoch + 1, artifact_root)
+            epoch_metrics.update(eval_metrics)
+            print(f"epoch={epoch+1} pca_fid={eval_metrics['pca_fid']:.6f}")
+        metrics_history.append(epoch_metrics)
+        save_json({"history": metrics_history, "config": asdict(config)}, metrics_dir / "history.json")
+        save_training_curves(metrics_history, metrics_dir / "training_curves.png")
 
     metadata = {"config": asdict(config), "global_step": global_step}
     checkpoint_dir = os.path.join(config.checkpoint_dir, config.expert_name)

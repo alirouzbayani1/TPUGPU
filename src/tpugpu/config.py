@@ -13,7 +13,14 @@ class ExpertTrainConfig:
     num_diffusion_steps: int = 1000
     hidden_channels: int = 64
     checkpoint_dir: str = "./outputs/checkpoints"
+    artifact_dir: str = "./outputs/experiments"
     log_every_steps: int = 50
+    sample_every_epochs: int = 1
+    eval_num_real: int = 512
+    eval_num_generated: int = 512
+    eval_batch_size: int = 128
+    cluster_assignments_path: str | None = None
+    cluster_id: int | None = None
     seed: int = 0
     expert_name: str = "expert"
     class_ids: tuple[int, ...] = (0, 1, 2, 3, 4)

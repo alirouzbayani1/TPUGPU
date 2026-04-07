@@ -1,1 +1,1 @@
-"""Evaluation utilities for expert and routed sampling behavior."""
+"""Evaluation helpers for TPUGPU experiments."""
