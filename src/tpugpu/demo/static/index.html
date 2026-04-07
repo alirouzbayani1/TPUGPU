@@ -22,15 +22,10 @@
 
       <section class="network">
         <div class="router-stack">
-          <div class="router-inline-title">router / europe-west4-a / x_t,t,y / top-1 step routing</div>
         </div>
       </section>
 
       <section class="map-panel">
-        <div class="map-header">
-          <span>global machine layout</span>
-          TPU expert in the US, router in Europe, GPU expert in Asia.
-        </div>
         <div class="map-wrap">
           <svg class="map-connections" viewBox="0 0 1000 520" preserveAspectRatio="none" aria-hidden="true">
             <line id="lineUsEu" class="connection-line" x1="90" y1="145" x2="502" y2="92"></line>
@@ -55,7 +50,7 @@
           <div class="map-pin router-pin">
             <div class="pin-dot"></div>
             <div class="pin-label">
-              <strong>Router</strong>
+              <strong>CPU router</strong>
               <span>europe-west4-a</span>
             </div>
             <div class="machine-card">
@@ -94,7 +89,7 @@
             Steps
             <input id="stepsInput" type="number" min="10" max="200" value="40" />
           </label>
-          <button id="runButton">Run</button>
+          <button id="runButton">Generate</button>
         </section>
       </section>
     </main>

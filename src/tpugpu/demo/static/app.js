@@ -146,7 +146,7 @@ function startDemo() {
   const source = new EventSource(`/api/demo/stream?${params.toString()}`);
   currentSource = source;
   runButton.disabled = true;
-  runButton.textContent = "Running...";
+  runButton.textContent = "Generating...";
 
   source.onmessage = (event) => {
     const payload = JSON.parse(event.data);
@@ -164,14 +164,14 @@ function startDemo() {
 
     if (payload.type === "done") {
       runButton.disabled = false;
-      runButton.textContent = "Run Live Demo";
+      runButton.textContent = "Generate";
       source.close();
     }
   };
 
   source.onerror = () => {
     runButton.disabled = false;
-    runButton.textContent = "Run Live Demo";
+    runButton.textContent = "Generate";
     source.close();
   };
 }

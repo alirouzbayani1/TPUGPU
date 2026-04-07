@@ -126,40 +126,10 @@ body {
   box-shadow: none;
 }
 
-.router-stack {
-  display: grid;
-  gap: 8px;
-  justify-items: center;
-}
-
-.router-inline-title {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 0.78rem;
-  text-transform: lowercase;
-  color: var(--brand);
-  letter-spacing: 0.04em;
-}
-
 .map-panel {
   margin-top: 0;
   border-top: 0;
   padding: 0;
-}
-
-.map-header {
-  margin-bottom: 6px;
-  color: #5a463d;
-  font-size: 0.82rem;
-  text-align: center;
-}
-
-.map-header span {
-  display: block;
-  margin-bottom: 8px;
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 0.72rem;
-  color: var(--brand);
-  text-transform: lowercase;
 }
 
 .map-wrap {
@@ -243,10 +213,11 @@ body {
 
 .pin-label strong {
   display: block;
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 0.75rem;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.05rem;
+  font-style: italic;
   font-weight: 600;
-  text-transform: lowercase;
+  letter-spacing: 0.01em;
 }
 
 .pin-label span {
