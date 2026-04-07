@@ -149,6 +149,14 @@ def restore_training_state(
     checkpointer = ocp.PyTreeCheckpointer()
     restored = checkpointer.restore(checkpoint_path)
     restored_state = restored["state"]
+    if isinstance(restored_state, dict):
+        restored_state = TrainState(
+            step=restored_state["step"],
+            apply_fn=state.apply_fn,
+            params=restored_state["params"],
+            tx=state.tx,
+            opt_state=restored_state["opt_state"],
+        )
     restored_metadata = restored.get("metadata", {})
     global_step = int(restored_metadata.get("global_step", 0))
     start_epoch = int(metrics_history[-1]["epoch"]) if metrics_history else 0
