@@ -21,6 +21,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--sample-every-epochs", type=int, default=1)
     parser.add_argument("--eval-num-real", type=int, default=512)
     parser.add_argument("--eval-num-generated", type=int, default=512)
+    parser.add_argument("--eval-batch-size", type=int, default=128)
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--seed", type=int, default=0)
     return parser.parse_args()
@@ -40,6 +41,7 @@ def main() -> None:
         sample_every_epochs=args.sample_every_epochs,
         eval_num_real=args.eval_num_real,
         eval_num_generated=args.eval_num_generated,
+        eval_batch_size=args.eval_batch_size,
         resume=args.resume,
         cluster_assignments_path=args.cluster_assignments_path,
         cluster_id=args.cluster_id,
