@@ -5,6 +5,7 @@ const strategyInput = document.getElementById("strategyInput");
 const stepValue = document.getElementById("stepValue");
 const selectedValue = document.getElementById("selectedValue");
 const progressValue = document.getElementById("progressValue");
+const policyValue = document.getElementById("policyValue");
 const leftConnector = document.getElementById("leftConnector");
 const rightConnector = document.getElementById("rightConnector");
 const expertLeft = document.getElementById("expertLeft");
@@ -80,6 +81,7 @@ function startDemo() {
       stepValue.textContent = `0 / ${payload.steps}`;
       selectedValue.textContent = "-";
       progressValue.textContent = "0%";
+      policyValue.textContent = payload.strategy;
       clearGlow();
       return;
     }
