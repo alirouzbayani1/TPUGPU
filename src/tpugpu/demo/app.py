@@ -38,12 +38,14 @@ async def _stream_demo_events(
     strategy: str,
     router_state,
 ) -> str:
+    if seed is None:
+        seed = int(np.random.default_rng().integers(0, 2_147_483_647))
     rng = np.random.default_rng(seed)
     x_t = rng.standard_normal((1, 32, 32, 1), dtype=np.float32)
     y = np.asarray([label], dtype=np.int32)
     clients = [ExpertClient(url, timeout_seconds=60.0) for url in expert_urls]
     router_mode = "learned" if router_state is not None else f"fallback:{strategy}"
-    print(f"demo_start label={label} steps={steps} router_mode={router_mode}", flush=True)
+    print(f"demo_start label={label} steps={steps} seed={seed} router_mode={router_mode}", flush=True)
 
     start_payload = {
         "type": "start",
@@ -121,7 +123,7 @@ def create_app() -> FastAPI:
     async def stream_demo(
         label: int = 2,
         steps: int = 40,
-        seed: int = 0,
+        seed: int | None = None,
         strategy: str = "alternating",
         expert_url_a: str = "http://34.162.118.249:8000",
         expert_url_b: str = "http://34.162.118.249:8000",
