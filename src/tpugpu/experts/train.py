@@ -212,7 +212,9 @@ def run_epoch_eval(
     )
 
     real_for_fid = eval_ds.images[: min(len(eval_ds.images), len(generated_images))]
+    real_labels_for_fid = eval_ds.labels[: len(real_for_fid)]
     gen_for_fid = generated_images[: len(real_for_fid)]
+    gen_labels_for_fid = generated_labels[: len(gen_for_fid)]
     labels_for_grid = generated_labels[: min(64, len(generated_labels))]
 
     epoch_dir = ensure_dir(artifact_root / f"epoch_{epoch:03d}")
@@ -221,8 +223,8 @@ def run_epoch_eval(
     save_tsne_plot(
         real_for_fid[:200],
         gen_for_fid[:200],
-        eval_ds.labels[:200],
-        generated_labels[:200],
+        real_labels_for_fid[:200],
+        gen_labels_for_fid[:200],
         epoch_dir / "generated_tsne.png",
         f"Real vs generated t-SNE epoch {epoch}",
         seed=config.seed + 30_000 + epoch,
