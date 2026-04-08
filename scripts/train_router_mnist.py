@@ -17,6 +17,7 @@ def parse_args() -> argparse.Namespace:
         help="Pipe-separated class groups aligned with --expert-names",
     )
     parser.add_argument("--checkpoint-dir", type=str, default="./outputs/checkpoints")
+    parser.add_argument("--router-checkpoint-dir", type=str, default="./outputs/router_checkpoints")
     parser.add_argument("--artifact-dir", type=str, default="./outputs/router")
     parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--num-epochs", type=int, default=10)
@@ -46,6 +47,7 @@ def main() -> None:
     config = RouterTrainConfig(
         expert_names=expert_names,
         checkpoint_dir=args.checkpoint_dir,
+        router_checkpoint_dir=args.router_checkpoint_dir,
         artifact_dir=args.artifact_dir,
         expert_label_splits=label_splits,
         batch_size=args.batch_size,

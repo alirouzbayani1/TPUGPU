@@ -10,6 +10,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from tpugpu.router.expert_client import ExpertClient
+from tpugpu.router.inference import load_router_state, predict_expert_id
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
@@ -20,7 +21,7 @@ def _normalize_frame(x_t: np.ndarray) -> list[int]:
     return image.reshape(-1).tolist()
 
 
-def _select_expert(step_idx: int, total_steps: int, label: int, strategy: str) -> int:
+def _fallback_expert(step_idx: int, total_steps: int, label: int, strategy: str) -> int:
     if strategy == "alternating":
         return step_idx % 2
     if strategy == "switch_halfway":
@@ -35,6 +36,7 @@ async def _stream_demo_events(
     seed: int,
     expert_urls: tuple[str, str],
     strategy: str,
+    router_state,
 ) -> str:
     rng = np.random.default_rng(seed)
     x_t = rng.standard_normal((1, 32, 32, 1), dtype=np.float32)
@@ -53,9 +55,14 @@ async def _stream_demo_events(
     yield f"data: {json.dumps(start_payload)}\n\n"
 
     dt = 1.0 / steps
+    last_selected_expert = None
     for step_idx in range(steps):
-        selected_expert = _select_expert(step_idx, steps, label, strategy)
         t = np.full((1,), step_idx * dt, dtype=np.float32)
+        if router_state is not None:
+            selected_expert = predict_expert_id(router_state, x_t, t, y)
+        else:
+            selected_expert = _fallback_expert(step_idx, steps, label, strategy)
+        last_selected_expert = selected_expert
         velocity = clients[selected_expert].predict_velocity(x_t, t, y)
         x_t = x_t + dt * velocity
         payload = {
@@ -74,7 +81,7 @@ async def _stream_demo_events(
         "type": "done",
         "label": label,
         "steps": steps,
-        "selected_expert": _select_expert(steps - 1, steps, label, strategy),
+        "selected_expert": last_selected_expert,
         "progress": 1.0,
         "frame": _normalize_frame(x_t),
     }
@@ -84,6 +91,13 @@ async def _stream_demo_events(
 def create_app() -> FastAPI:
     app = FastAPI(title="TPUGPU Router Demo")
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+    try:
+        router_state, router_info = load_router_state("router_mnist_oracle", "./outputs/router_checkpoints")
+        app.state.router_state = router_state
+        app.state.router_info = router_info
+    except FileNotFoundError:
+        app.state.router_state = None
+        app.state.router_info = None
 
     @app.get("/")
     async def index() -> FileResponse:
@@ -91,7 +105,10 @@ def create_app() -> FastAPI:
 
     @app.get("/api/health")
     async def health() -> dict[str, str]:
-        return {"status": "ok"}
+        return {
+            "status": "ok",
+            "router_loaded": "yes" if app.state.router_state is not None else "no",
+        }
 
     @app.get("/api/demo/stream")
     async def stream_demo(
@@ -109,6 +126,7 @@ def create_app() -> FastAPI:
                 seed=seed,
                 expert_urls=(expert_url_a, expert_url_b),
                 strategy=strategy,
+                router_state=app.state.router_state,
             ),
             media_type="text/event-stream",
             headers={

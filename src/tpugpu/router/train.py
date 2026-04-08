@@ -29,6 +29,7 @@ from tpugpu.router.model import RouterMLP
 class RouterTrainConfig:
     expert_names: tuple[str, ...]
     checkpoint_dir: str = "./outputs/checkpoints"
+    router_checkpoint_dir: str = "./outputs/router_checkpoints"
     artifact_dir: str = "./outputs/router"
     expert_label_splits: tuple[tuple[int, ...], ...] = ((0, 1, 2, 3, 4), (5, 6, 7, 8, 9))
     image_size: int = 32
@@ -164,6 +165,7 @@ def train_router(config: RouterTrainConfig) -> None:
 
     artifact_root = ensure_dir(Path(config.artifact_dir) / config.router_name)
     metrics_dir = ensure_dir(artifact_root / "metrics")
+    checkpoint_dir = Path(config.router_checkpoint_dir).expanduser().resolve() / config.router_name
     metrics_history: list[dict[str, float]] = []
 
     print("router_config:", asdict(config))
@@ -259,6 +261,16 @@ def train_router(config: RouterTrainConfig) -> None:
             metrics_dir / "history.json",
         )
         save_router_training_curves(metrics_history, metrics_dir / "router_training_curves.png")
+        metadata = {
+            "config": asdict(config),
+            "epoch": epoch + 1,
+            "history_length": len(metrics_history),
+        }
+        ocp.PyTreeCheckpointer().save(
+            str(checkpoint_dir / f"step_{epoch + 1}"),
+            {"state": state, "metadata": metadata},
+            force=True,
+        )
 
     summary = {
         "config": asdict(config),
