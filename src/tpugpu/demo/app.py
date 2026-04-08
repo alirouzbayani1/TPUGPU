@@ -126,7 +126,7 @@ def create_app() -> FastAPI:
         seed: int | None = None,
         strategy: str = "alternating",
         expert_url_a: str = "http://34.162.118.249:8000",
-        expert_url_b: str = "http://34.162.118.249:8000",
+        expert_url_b: str = "http://34.143.140.34:8000",
     ) -> StreamingResponse:
         return StreamingResponse(
             _stream_demo_events(
