@@ -42,6 +42,8 @@ async def _stream_demo_events(
     x_t = rng.standard_normal((1, 32, 32, 1), dtype=np.float32)
     y = np.asarray([label], dtype=np.int32)
     clients = [ExpertClient(url, timeout_seconds=60.0) for url in expert_urls]
+    router_mode = "learned" if router_state is not None else f"fallback:{strategy}"
+    print(f"demo_start label={label} steps={steps} router_mode={router_mode}", flush=True)
 
     start_payload = {
         "type": "start",
@@ -63,6 +65,10 @@ async def _stream_demo_events(
         else:
             selected_expert = _fallback_expert(step_idx, steps, label, strategy)
         last_selected_expert = selected_expert
+        print(
+            f"demo_step step={step_idx + 1}/{steps} label={label} t={float(t[0]):.4f} selected_expert={selected_expert}",
+            flush=True,
+        )
         velocity = clients[selected_expert].predict_velocity(x_t, t, y)
         x_t = x_t + dt * velocity
         payload = {
@@ -85,6 +91,7 @@ async def _stream_demo_events(
         "progress": 1.0,
         "frame": _normalize_frame(x_t),
     }
+    print(f"demo_done label={label} steps={steps} last_selected_expert={last_selected_expert}", flush=True)
     yield f"data: {json.dumps(done_payload)}\n\n"
 
 
