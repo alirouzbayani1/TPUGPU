@@ -8,7 +8,7 @@ import jax.numpy as jnp
 import orbax.checkpoint as ocp
 
 from tpugpu.experts.train import latest_checkpoint_path
-from tpugpu.router.model import RouterMLP, router_predict_logits
+from tpugpu.router.model import RouterMLP
 from tpugpu.router.train import RouterTrainConfig, RouterState, _create_router_state
 
 
@@ -40,9 +40,8 @@ def load_router_state(router_name: str, checkpoint_dir: str) -> tuple[RouterStat
 
 
 def predict_expert_id(state: RouterState, x_t, t, y) -> int:
-    logits = router_predict_logits(
-        state.params,
-        state.apply_fn,
+    logits = state.apply_fn(
+        {"params": state.params},
         jnp.asarray(x_t, dtype=jnp.float32),
         jnp.asarray(t, dtype=jnp.float32),
         jnp.asarray(y, dtype=jnp.int32),
