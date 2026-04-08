@@ -40,7 +40,17 @@
             <circle id="pinTpu" class="pin-dot" cx="300" cy="150" r="8"></circle>
             <text class="node-title" x="286" y="182" text-anchor="end">TPU expert</text>
             <text class="node-region" x="286" y="200" text-anchor="end">us-east5-a</text>
-            <foreignObject x="96" y="212" width="176" height="70">
+            <foreignObject
+              id="cardTpu"
+              class="machine-card-fo"
+              x="96"
+              y="212"
+              width="176"
+              height="70"
+              data-anchor="end"
+              data-pin-x="300"
+              data-gap="14"
+            >
               <div xmlns="http://www.w3.org/1999/xhtml" class="machine-card">
                 <div>hardware: TPU - v6e-1</div>
                 <div>stack: JAX / XLA</div>
@@ -54,7 +64,17 @@
             <circle id="pinRouter" class="pin-dot" cx="500" cy="110" r="8"></circle>
             <text class="node-title" x="500" y="142" text-anchor="middle">CPU router</text>
             <text class="node-region" x="500" y="160" text-anchor="middle">europe-west4-a</text>
-            <foreignObject x="390" y="172" width="220" height="76">
+            <foreignObject
+              id="cardRouter"
+              class="machine-card-fo"
+              x="390"
+              y="172"
+              width="220"
+              height="76"
+              data-anchor="middle"
+              data-pin-x="500"
+              data-gap="0"
+            >
               <div xmlns="http://www.w3.org/1999/xhtml" class="machine-card">
                 <div>hardware: CPU - e2-standard-4</div>
                 <div>stack: Python / FastAPI</div>
@@ -73,7 +93,17 @@
             <circle id="pinGpu" class="pin-dot" cx="785" cy="260" r="8"></circle>
             <text class="node-title" x="777" y="292">GPU expert</text>
             <text class="node-region" x="777" y="310">asia-southeast1-a</text>
-            <foreignObject x="777" y="322" width="196" height="72">
+            <foreignObject
+              id="cardGpu"
+              class="machine-card-fo"
+              x="777"
+              y="322"
+              width="196"
+              height="72"
+              data-anchor="start"
+              data-pin-x="785"
+              data-gap="14"
+            >
               <div xmlns="http://www.w3.org/1999/xhtml" class="machine-card">
                 <div>hardware: GPU-A100 40GB</div>
                 <div>stack: PyTorch / CUDA</div>

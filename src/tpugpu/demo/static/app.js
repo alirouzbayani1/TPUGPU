@@ -7,8 +7,36 @@ const expertLeft = document.getElementById("nodeTpu");
 const expertRight = document.getElementById("nodeGpu");
 const canvas = document.getElementById("stateCanvas");
 const ctx = canvas.getContext("2d");
+const machineCardObjects = Array.from(document.querySelectorAll(".machine-card-fo"));
 
 let currentSource = null;
+
+function sizeMachineCards() {
+  for (const foreignObject of machineCardObjects) {
+    const card = foreignObject.querySelector(".machine-card");
+    if (!card) {
+      continue;
+    }
+
+    const width = Math.ceil(card.scrollWidth);
+    const height = Math.ceil(card.scrollHeight);
+    const pinX = Number(foreignObject.dataset.pinX || 0);
+    const gap = Number(foreignObject.dataset.gap || 0);
+    const anchor = foreignObject.dataset.anchor || "start";
+
+    foreignObject.setAttribute("width", String(width));
+    foreignObject.setAttribute("height", String(height));
+
+    let x = pinX + gap;
+    if (anchor === "end") {
+      x = pinX - gap - width;
+    } else if (anchor === "middle") {
+      x = pinX - width / 2;
+    }
+
+    foreignObject.setAttribute("x", String(Math.round(x)));
+  }
+}
 
 function drawFrame(flatPixels) {
   const imageData = ctx.createImageData(32, 32);
@@ -101,4 +129,7 @@ function startDemo() {
 }
 
 runButton.addEventListener("click", startDemo);
+window.addEventListener("load", sizeMachineCards);
+window.addEventListener("resize", sizeMachineCards);
+sizeMachineCards();
 drawFrame(new Array(32 * 32).fill(0));
