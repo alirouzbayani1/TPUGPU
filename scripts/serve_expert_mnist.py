@@ -47,7 +47,27 @@ def main() -> None:
             content_length = int(self.headers.get("Content-Length", "0"))
             payload = self.rfile.read(content_length)
             x_t, t, y = decode_predict_request(payload)
+            print(
+                "expert_predict "
+                f"expert={args.expert_name} "
+                f"label={int(y[0]) if len(y) else 'na'} "
+                f"t={float(t[0]) if len(t) else float('nan'):.4f} "
+                f"batch={x_t.shape[0]} "
+                f"shape={tuple(x_t.shape)} "
+                f"x_mean={float(x_t.mean()):.6f} "
+                f"x_std={float(x_t.std()):.6f}",
+                flush=True,
+            )
             velocity = predict_velocity_numpy(state, x_t, t, y)
+            print(
+                "expert_velocity "
+                f"expert={args.expert_name} "
+                f"label={int(y[0]) if len(y) else 'na'} "
+                f"t={float(t[0]) if len(t) else float('nan'):.4f} "
+                f"v_mean={float(velocity.mean()):.6f} "
+                f"v_std={float(velocity.std()):.6f}",
+                flush=True,
+            )
             response = encode_predict_response(velocity)
             self.send_response(HTTPStatus.OK)
             self.send_header("Content-Type", "application/octet-stream")

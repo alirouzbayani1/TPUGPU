@@ -67,11 +67,28 @@ async def _stream_demo_events(
         else:
             selected_expert = _fallback_expert(step_idx, steps, label, strategy)
         last_selected_expert = selected_expert
+        selected_url = expert_urls[selected_expert]
         print(
-            f"demo_step step={step_idx + 1}/{steps} label={label} t={float(t[0]):.4f} selected_expert={selected_expert}",
+            "demo_step "
+            f"step={step_idx + 1}/{steps} "
+            f"label={label} "
+            f"t={float(t[0]):.4f} "
+            f"selected_expert={selected_expert} "
+            f"selected_url={selected_url} "
+            f"x_mean={float(x_t.mean()):.6f} "
+            f"x_std={float(x_t.std()):.6f}",
             flush=True,
         )
         velocity = clients[selected_expert].predict_velocity(x_t, t, y)
+        print(
+            "demo_velocity "
+            f"step={step_idx + 1}/{steps} "
+            f"label={label} "
+            f"selected_expert={selected_expert} "
+            f"v_mean={float(velocity.mean()):.6f} "
+            f"v_std={float(velocity.std()):.6f}",
+            flush=True,
+        )
         x_t = x_t + dt * velocity
         payload = {
             "type": "step",
