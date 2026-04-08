@@ -119,11 +119,11 @@ body {
   height: 100%;
   background: rgba(255, 255, 255, 0.9);
   border-radius: 8px;
-  padding: 12px 14px;
+  padding: 8px 10px;
   color: #5a463d;
   font-family: "IBM Plex Mono", monospace;
   font-size: 8px;
-  line-height: 1.55;
+  line-height: 1.4;
 }
 
 .router-live-image {
