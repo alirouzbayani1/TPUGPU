@@ -61,10 +61,12 @@ function startDemo() {
     currentSource.close();
   }
 
+  const seed = Math.floor(Math.random() * 2147483647);
   const params = new URLSearchParams({
     label: labelInput.value,
     steps: stepsInput.value,
     strategy: "alternating",
+    seed: String(seed),
   });
   const source = new EventSource(`/api/demo/stream?${params.toString()}`);
   currentSource = source;
