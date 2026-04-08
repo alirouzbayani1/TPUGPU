@@ -20,18 +20,18 @@ function sizeMachineCards() {
 
     const width = Math.ceil(card.scrollWidth);
     const height = Math.ceil(card.scrollHeight);
-    const pinX = Number(foreignObject.dataset.pinX || 0);
+    const anchorX = Number(foreignObject.dataset.anchorX || 0);
     const gap = Number(foreignObject.dataset.gap || 0);
     const anchor = foreignObject.dataset.anchor || "start";
 
     foreignObject.setAttribute("width", String(width));
     foreignObject.setAttribute("height", String(height));
 
-    let x = pinX + gap;
+    let x = anchorX + gap;
     if (anchor === "end") {
-      x = pinX - gap - width;
+      x = anchorX - gap - width;
     } else if (anchor === "middle") {
-      x = pinX - width / 2;
+      x = anchorX - width / 2;
     }
 
     foreignObject.setAttribute("x", String(Math.round(x)));
