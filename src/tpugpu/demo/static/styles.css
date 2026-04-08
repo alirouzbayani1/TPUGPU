@@ -97,7 +97,7 @@ body {
   filter:
     drop-shadow(0 0 12px rgba(0, 255, 102, 0.88))
     drop-shadow(0 0 28px rgba(0, 255, 102, 0.92));
-  animation: pinPulse 0.18s linear;
+  animation: pinGlowPulse 0.18s linear;
 }
 
 .node-title {
@@ -173,16 +173,31 @@ body {
   cursor: pointer;
 }
 
-@keyframes pinPulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.16); }
-  100% { transform: scale(1); }
-}
-
 @keyframes haloPulse {
   0% { opacity: 0.55; }
   50% { opacity: 1; }
   100% { opacity: 0.7; }
+}
+
+@keyframes pinGlowPulse {
+  0% {
+    opacity: 0.95;
+    filter:
+      drop-shadow(0 0 6px rgba(0, 255, 102, 0.45))
+      drop-shadow(0 0 12px rgba(0, 255, 102, 0.52));
+  }
+  50% {
+    opacity: 1;
+    filter:
+      drop-shadow(0 0 14px rgba(0, 255, 102, 0.92))
+      drop-shadow(0 0 32px rgba(0, 255, 102, 0.98));
+  }
+  100% {
+    opacity: 1;
+    filter:
+      drop-shadow(0 0 10px rgba(0, 255, 102, 0.82))
+      drop-shadow(0 0 24px rgba(0, 255, 102, 0.9));
+  }
 }
 
 @keyframes pulseStroke {
