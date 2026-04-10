@@ -20,6 +20,7 @@ Use these documents as the source of truth for project execution:
 - [docs/ROUTER_README.md](/Users/ali/projects/TPUGPU/docs/ROUTER_README.md)
 - [docs/SERVING_README.md](/Users/ali/projects/TPUGPU/docs/SERVING_README.md)
 - [docs/LIVE_DEMO_README.md](/Users/ali/projects/TPUGPU/docs/LIVE_DEMO_README.md)
+- [docs/AGENT_HANDOFF_README.md](/Users/ali/projects/TPUGPU/docs/AGENT_HANDOFF_README.md)
 
 `docs/TPU_VM_SETUP.md` is the exact bring-up guide for reproducing the working TPU VM state that already ran the first MNIST expert successfully.
 
@@ -42,6 +43,10 @@ Read these in order if you want the current full system:
 2. [docs/ROUTER_README.md](/Users/ali/projects/TPUGPU/docs/ROUTER_README.md)
 3. [docs/SERVING_README.md](/Users/ali/projects/TPUGPU/docs/SERVING_README.md)
 4. [docs/LIVE_DEMO_README.md](/Users/ali/projects/TPUGPU/docs/LIVE_DEMO_README.md)
+
+If you are a new coding agent taking over the project and need the fastest single handoff:
+
+- [docs/AGENT_HANDOFF_README.md](/Users/ali/projects/TPUGPU/docs/AGENT_HANDOFF_README.md)
 
 ## Current Live State
 
